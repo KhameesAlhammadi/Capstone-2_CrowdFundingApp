@@ -2,6 +2,8 @@ import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./firebase";
+import { Redirect } from "expo-router";
+// import {createStaticNavigation, useNavigation} from '@react-navigation/native';
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -9,6 +11,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  // const navigation = useNavigation();
 
   const handleSubmit = async () => {
     setError("");
@@ -17,12 +20,16 @@ export default function AuthPage() {
       return;
     }
     try {
-      if (isSignUp) {
+      if (isSignUp)
+        {
         await createUserWithEmailAndPassword(auth, email, password);
         console.log("User signed up successfully");
-      } else {
+      } 
+      else 
+      {
         await signInWithEmailAndPassword(auth, email, password);
         console.log("User signed in successfully");
+        // navigation.navigate('Details');
       }
     } catch (err: any) {
       setError(err.message);
@@ -34,10 +41,13 @@ export default function AuthPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       console.log("User signed in with Google");
+
     } catch (err: any) {
       setError(err.message);
     }
   };
+
+
 
   return (
     <View style={styles.container}>
