@@ -23,12 +23,12 @@ export default function AuthPage() {
       if (isSignUp)
         {
         await createUserWithEmailAndPassword(auth, email, password);
-        console.log("User signed up successfully");
+        alert("User signed up successfully");
       } 
       else 
       {
         await signInWithEmailAndPassword(auth, email, password);
-        console.log("User signed in successfully");
+        alert("User signed in successfully");
         // navigation.navigate('Details');
       }
     } catch (err: any) {
