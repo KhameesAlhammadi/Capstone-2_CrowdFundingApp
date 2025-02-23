@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../firebaseconfig/firebase";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -15,6 +16,7 @@ export default function AuthPage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigation = useNavigation<any>(); // add this to use the navigation
 
   const handleSubmit = async () => {
     setError("");
@@ -38,13 +40,15 @@ export default function AuthPage() {
     }
 
     try {
-      if (isSignUp) {
+      if (isSignUp)
+        {
         await createUserWithEmailAndPassword(auth, email, password);
         setSuccessMessage(`Account created successfully! 🎉 Welcome, ${firstName} ${lastName}!`);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        setSuccessMessage("Logged in successfully! 🎉");
-      }
+        alert("Logged in successfully! 🎉");
+        navigation.navigate('Profile'); // Navigate to ProfilePage
+      } 
     } catch (err: any) {
       setError("An error occurred. Please try again.");
     }
@@ -75,11 +79,15 @@ export default function AuthPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      setSuccessMessage("Logged in with Google successfully! 🎉");
+      alert("Logged in with Google successfully! 🎉");
+      navigation.navigate('Profile'); // Navigate to ProfilePage
+
     } catch (err: any) {
       setError("Google Sign-In failed. Try again.");
     }
   };
+
+
 
   return (
     <View style={styles.container}>
