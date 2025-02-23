@@ -1,84 +1,178 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth } from "../firebaseconfig/firebase";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false); // Added forgot password state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubmit = async () => {
     setError("");
-    if (isSignUp && password !== confirmPassword) {
-      setError("Passwords do not match, Try again with something harder!.");
+    setSuccessMessage("");
+
+    if (!email.trim() || !password.trim()) {
+      setError("Email and Password are required.");
       return;
     }
+
+    if (isSignUp) {
+      if (!firstName.trim() || !lastName.trim()) {
+        setError("First Name and Last Name are required.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setError("Passwords do not match. Try again!");
+        return;
+      }
+    }
+
     try {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
-        console.log("User signed up successfully");
+        setSuccessMessage(`Account created successfully! 🎉 Welcome, ${firstName} ${lastName}!`);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        console.log("User signed in successfully");
+        setSuccessMessage("Logged in successfully! 🎉");
       }
     } catch (err: any) {
-      setError(err.message);
+      setError("An error occurred. Please try again.");
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      console.log("User signed in with Google");
-    } catch (err: any) {
-      setError(err.message);
+  const handleResetPassword = () => {
+    setError("");
+    setSuccessMessage("");
+
+    if (!newPassword.trim() || !confirmNewPassword.trim()) {
+      setError("Both fields are required.");
+      return;
     }
+
+    if (newPassword !== confirmNewPassword) {
+      setError("Passwords do not match. Try again!");
+      return;
+    }
+
+    setSuccessMessage("Password reset successful! 🎉");
+    setIsForgotPassword(false); // Switch back to sign-in form
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.box}>
-        <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        {isSignUp && (
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
+        {!isForgotPassword ? ( // Show login/signup form
+          <View>
+            <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
+
+            {isSignUp && (
+              <View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="First Name"
+                  value={firstName}
+                  onChangeText={setFirstName}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChangeText={setLastName}
+                />
+              </View>
+            )}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+
+            {!isSignUp && (
+              <TouchableOpacity onPress={() => setIsForgotPassword(true)}>
+                <Text style={styles.toggleText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            )}
+
+            {isSignUp && (
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+              />
+            )}
+
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                setIsSignUp(!isSignUp);
+                setError("");
+                setSuccessMessage("");
+                setFirstName("");
+                setLastName("");
+              }}
+            >
+              <Text style={styles.toggleText}>{isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : ( // Show forgot password form
+          <View>
+            <Text style={styles.title}>Reset Password</Text>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter New Password"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              secureTextEntry
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm New Password"
+              value={confirmNewPassword}
+              onChangeText={setConfirmNewPassword}
+              secureTextEntry
+            />
+
+            <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
+              <Text style={styles.buttonText}>Reset Password</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setIsForgotPassword(false)}>
+              <Text style={styles.toggleText}>Back to Sign In</Text>
+            </TouchableOpacity>
+          </View>
         )}
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
-        </TouchableOpacity>
-        <Text style={styles.orText}>Or sign in with</Text>
-        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-          <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
-          <Text style={styles.buttonText}>Sign in with Google</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-          <Text style={styles.toggleText}>{isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -112,6 +206,10 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 10,
   },
+  success: {
+    color: "green",
+    marginBottom: 10,
+  },
   input: {
     width: "100%",
     padding: 10,
@@ -132,28 +230,10 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "bold",
   },
-  orText: {
-    marginVertical: 10,
-    color: "#666",
-  },
-  googleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    backgroundColor: "#db4437",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  googleLogo: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
-  },
   toggleText: {
     marginTop: 15,
     color: "#007bff",
     textDecorationLine: "underline",
+    textAlign: "center",
   },
 });
