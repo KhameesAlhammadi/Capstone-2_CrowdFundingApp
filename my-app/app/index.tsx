@@ -11,7 +11,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const handleSubmit = async () => {
     setError("");
@@ -24,13 +24,12 @@ export default function AuthPage() {
         {
         await createUserWithEmailAndPassword(auth, email, password);
         alert("User signed up successfully");
-        navigation.navigate("Profile"); // Navigate to ProfilePage
       } 
       else 
       {
         await signInWithEmailAndPassword(auth, email, password);
         alert("User signed in successfully");
-        // navigation.navigate('Details');
+        navigation.navigate('Profile'); // Navigate to ProfilePage
       }
     } catch (err: any) {
       setError(err.message);
