@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./firebase";
-import { Redirect } from "expo-router";
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 // import {createStaticNavigation, useNavigation} from '@react-navigation/native';
 
 export default function AuthPage() {
@@ -11,7 +11,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
 
   const handleSubmit = async () => {
     setError("");
@@ -24,6 +24,7 @@ export default function AuthPage() {
         {
         await createUserWithEmailAndPassword(auth, email, password);
         alert("User signed up successfully");
+        navigation.navigate("Profile"); // Navigate to ProfilePage
       } 
       else 
       {
@@ -41,6 +42,7 @@ export default function AuthPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       console.log("User signed in with Google");
+      navigation.navigate('Home');
 
     } catch (err: any) {
       setError(err.message);
