@@ -3,7 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "reac
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./firebase";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
-// import {createStaticNavigation, useNavigation} from '@react-navigation/native';
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -11,7 +10,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<any>(); // add this to use the navigation
 
   const handleSubmit = async () => {
     setError("");
@@ -41,7 +40,7 @@ export default function AuthPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       console.log("User signed in with Google");
-      navigation.navigate('Home');
+      navigation.navigate('Profile'); // Navigate to ProfilePage
 
     } catch (err: any) {
       setError(err.message);
