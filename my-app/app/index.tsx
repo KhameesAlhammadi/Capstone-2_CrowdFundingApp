@@ -68,6 +68,19 @@ export default function AuthPage() {
     setIsForgotPassword(false); // Switch back to sign-in form
   };
 
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      setSuccessMessage("Logged in with Google successfully! 🎉");
+    } catch (err: any) {
+      setError("Google Sign-In failed. Try again.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.box}>
@@ -79,36 +92,13 @@ export default function AuthPage() {
 
             {isSignUp && (
               <View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="First Name"
-                  value={firstName}
-                  onChangeText={setFirstName}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChangeText={setLastName}
-                />
+                <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
+                <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
               </View>
             )}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+            <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+            <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
 
             {!isSignUp && (
               <TouchableOpacity onPress={() => setIsForgotPassword(true)}>
@@ -117,21 +107,20 @@ export default function AuthPage() {
             )}
 
             {isSignUp && (
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
+              <TextInput style={styles.input} placeholder="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
             )}
 
             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
               <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
+            {/* Google Sign-In Button */}
+            <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+              <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
+              <Text style={styles.buttonText}>Sign in with Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => {
                 setIsSignUp(!isSignUp);
                 setError("");
                 setSuccessMessage("");
@@ -148,21 +137,8 @@ export default function AuthPage() {
             {error ? <Text style={styles.error}>{error}</Text> : null}
             {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enter New Password"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm New Password"
-              value={confirmNewPassword}
-              onChangeText={setConfirmNewPassword}
-              secureTextEntry
-            />
+            <TextInput style={styles.input} placeholder="Enter New Password" value={newPassword} onChangeText={setNewPassword} secureTextEntry />
+            <TextInput style={styles.input} placeholder="Confirm New Password" value={confirmNewPassword} onChangeText={setConfirmNewPassword} secureTextEntry />
 
             <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
               <Text style={styles.buttonText}>Reset Password</Text>
@@ -225,6 +201,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginTop: 10,
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    backgroundColor: "#db4437",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  googleLogo: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
   },
   buttonText: {
     color: "#ffffff",
