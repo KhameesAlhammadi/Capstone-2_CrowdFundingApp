@@ -1,14 +1,12 @@
-import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { View, Text } from 'react-native'
+import React from 'react'
 
-
-
-
-export default function ProfilePage()
-{
-    return(
-        <View>
-            <Text>HI</Text>
-        </View>
-    );
+const profilePage = () => {
+  return (
+    <View>
+      <Text>profilePage</Text>
+    </View>
+  )
 }
+
+export default profilePage
