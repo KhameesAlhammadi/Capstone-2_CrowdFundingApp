@@ -96,7 +96,7 @@ export default function Index() {
           </View>
         )}
       />
-
+      
       {/* Floating Add Button */}
       <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
         <AntDesign name="plus" size={30} color="white" />
@@ -152,7 +152,7 @@ const styles = {
     alignItems: 'center',
   },
   propertyContainer: {
-    marginRight: 15,  // Add spacing between items
+    marginRight: 15,  
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
     padding: 10,
@@ -161,7 +161,7 @@ const styles = {
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    width: 160,  // Fixed width for consistent layout
+    width: 160,  
   },
   propertyImage: {
     width: 150,
