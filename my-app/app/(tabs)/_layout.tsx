@@ -6,9 +6,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#ffd33d",
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 5,
+          paddingTop: 5,
+          backgroundColor: "#fff",
+          borderTopWidth: 0,
+        },
       }}
     >
-
       <Tabs.Screen
         name="HomeScreen"
         options={{
@@ -38,13 +44,14 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* Hidden Login Tab */}
+
+      {/* Hiding Login Tab Properly */}
       <Tabs.Screen
         name="Login"
         options={{
-          title: "Login Page",
-          tabBarButton: () => null, // Hides tab from bottom navigation
-          tabBarStyle: { display: "none" }, // Ensures no space is reserved for it
+          href: null, // Completely removes it from navigation
+          tabBarStyle: { display: "none" }, // Ensures no extra space is left
+          title: "Login Page", // Just for internal reference
         }}
       />
     </Tabs>
