@@ -9,6 +9,7 @@ export default function ProfilePage()
     return(
         <View>
             <Text>HI</Text>
+            
         </View>
     );
 }
