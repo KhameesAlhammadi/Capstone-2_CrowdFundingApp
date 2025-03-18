@@ -56,10 +56,7 @@ export default function ContactScreen() {
        When you tap it, it fades a little, showing that it's been pressed. */}
       </View>
        
-      {/* Footer Section */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>© 2024 WeFundEachOther. All rights reserved.</Text>
-      </View>
+      
     </View>
     </ScrollView>
   );

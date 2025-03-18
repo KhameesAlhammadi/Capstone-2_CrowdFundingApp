@@ -1,10 +1,14 @@
-// Import only what's needed
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getStorage } from "firebase/storage";
-import { getFirestore } from "firebase/firestore";
+// firebase.js
 
-// Firebase configuration
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// Remove analytics import since it causes issues in React Native
+// import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC_Wl5OvCmq2F5WtlM9gNHVMpCplPWPGbQ",
   authDomain: "wefundeachother-17cd9.firebaseapp.com",
@@ -13,12 +17,14 @@ const firebaseConfig = {
   storageBucket: "wefundeachother-17cd9.firebasestorage.app",
   messagingSenderId: "825665064662",
   appId: "1:825665064662:web:7eabcb02c74db797fd8377",
+  measurementId: "G-BGT1MB36FH"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
+// Do not initialize analytics in a React Native environment
+// const analytics = getAnalytics(app);
 
-export { auth, db, storage };
+export const firebaseApp = app;
+export { auth };
