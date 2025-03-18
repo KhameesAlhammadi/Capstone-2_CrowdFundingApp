@@ -29,87 +29,85 @@ export default function InvestPage() {
   const decreaseAmount = () => setInvestmentAmount(prev => (prev > 0 ? prev - 100 : 0));
   const handleInvest = () => alert(`You have invested AED ${investmentAmount}`);
 
-  return (
-    <ScrollView>
-    <View style={styles.container}>
-      <View style={styles.cardImage}>
-      {imageUrl ? (
-            <Image source={{ uri: imageUrl }} 
-            style={styles.cardImageInner}
-            resizeMode= "cover"/>
-            
-            ) : (
-            <ActivityIndicator  size="large" color="#4caf50" />
-            
-            )}
+  
+    return (
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.cardImage}>
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.cardImageInner} resizeMode="cover" />
+          ) : (
+            <ActivityIndicator size="large" color="#4caf50" />
+          )}
         </View>
+
         <View style={styles.card}>
-        <View style={styles.cardContent}>
-          <Text style={styles.propertyDetails}>🏠 2 • Ready • 🇦🇪 Dubai</Text>
-          <Text style={styles.propertyTitle}>2 Bed in Studio One Tower</Text>
-          <Text style={styles.propertyPrice}>AED 1,236,002</Text>
-          <View style={styles.progressContainer}>
-            <Progress.Bar progress={0.45} width={null} color="#4caf50" borderRadius={4} />
-            <Text style={styles.fundedText}>45% funded</Text>
-          </View>
-          <View style={styles.statsContainer}>
-            <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
-            <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
-            <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
-            <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+          <View style={styles.cardContent}>
+            <Text style={styles.propertyDetails}>🏠 2 • Ready • 🇦🇪 Dubai</Text>
+            <Text style={styles.propertyTitle}>2 Bed in Studio One Tower</Text>
+            <Text style={styles.propertyPrice}>AED 1,236,002</Text>
+            <View style={styles.progressContainer}>
+              <Progress.Bar progress={0.45} width={null} color="#4caf50" borderRadius={4} />
+              <Text style={styles.fundedText}>45% funded</Text>
+            </View>
+            <View style={styles.statsContainer}>
+              <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
+              <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
+              <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
+              <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      // Testing code
-      <View style={styles.statsContainer}>
-            <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
-            <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
-            <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
-            <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
-          </View>
-          <View style={styles.statsContainer}>
-            <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
-            <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
-            <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
-            <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
-          </View>
-          <View style={styles.statsContainer}>
-            <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
-            <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
-            <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
-            <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
-          </View>
-          <View style={styles.statsContainer}>
-            <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
-            <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
-            <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
-            <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
-          </View>
+        {/* Testing code */}
+        <View style={styles.statsContainer}>
+          <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
+          <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
+          <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
+          <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+        </View>
+        <View style={styles.statsContainer}>
+          <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
+          <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
+          <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
+          <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+        </View>
+        <View style={styles.statsContainer}>
+          <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
+          <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
+          <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
+          <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+        </View>
+        <View style={styles.statsContainer}>
+          <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
+          <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
+          <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
+          <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+        </View>
+        {/* End of Testing */}
+      </ScrollView>
 
-          // End of Testing
+      <View style={styles.stickyControlPanel}>
+        <View style={styles.amountControl}>
+          <TouchableOpacity style={styles.adjustButton} onPress={decreaseAmount}>
+            <Text style={styles.adjustText}>-</Text>
+          </TouchableOpacity>
 
-    <View style={styles.investCardBorder}>
-      <View style={styles.amountControl}>
-        <TouchableOpacity style={styles.adjustButton} onPress={decreaseAmount}>
-          <Text style={styles.adjustText}>-</Text>
-        </TouchableOpacity>
-        <Text style={styles.amountText}>AED {investmentAmount}</Text>
-        <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
-          <Text style={styles.adjustText}>+</Text>
-        </TouchableOpacity>
-      </View>
+          <Text style={styles.amountText}>AED {investmentAmount}</Text>
 
-      <View style={styles.investButtonWrapper}>
+          <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
+            <Text style={styles.adjustText}>+</Text>
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity style={styles.investButton} onPress={handleInvest}>
           <Text style={styles.investButtonText}>Invest Now</Text>
         </TouchableOpacity>
       </View>
     </View>
-      
-    </View>
-    </ScrollView>
   );
+
+
 }
 
 
@@ -235,4 +233,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  stickyControlPanel: {
+  position: "absolute",
+  bottom: 20,
+  left: 20,
+  right: 20, // This gives a margin effect from both sides
+  backgroundColor: "#fff",
+  paddingVertical: 16,
+  paddingHorizontal: 24,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#ccc",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+  elevation: 10,
+  alignItems: "center",
+},
+
 });
