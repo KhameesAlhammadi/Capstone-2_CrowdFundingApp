@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 
 export default function ContactScreen() {
   const [name, setName] = useState("");
@@ -21,6 +21,7 @@ export default function ContactScreen() {
   };
 
   return (
+    <ScrollView>
     <View style={styles.container}>
       {/* Header Section */}
       <View style={styles.header}>
@@ -60,6 +61,7 @@ export default function ContactScreen() {
         <Text style={styles.footerText}>© 2024 WeFundEachOther. All rights reserved.</Text>
       </View>
     </View>
+    </ScrollView>
   );
 }
 
