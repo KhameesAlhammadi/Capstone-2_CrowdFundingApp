@@ -11,7 +11,7 @@ const Stack = createNativeStackNavigator();
 export default function MyStack() 
 {
   return (
-    <Stack.Navigator initialRouteName="Contact us">
+    <Stack.Navigator initialRouteName="Invest">
       <Stack.Screen name="SignIn" component={AuthPage} />
       <Stack.Screen name="Invest" component={InvestPage} />
       <Stack.Screen name="home" component={HomeScreen} /> 
