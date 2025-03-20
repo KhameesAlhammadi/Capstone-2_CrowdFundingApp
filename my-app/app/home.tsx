@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, StyleSheet, Dimensions } from "react-native";
+import { Picker } from "@react-native-picker/picker"; 
+import { Image } from "react-native";
 const { height, width } = Dimensions.get("window");
 
 export default function HomeScreen() {
@@ -8,7 +10,11 @@ export default function HomeScreen() {
   // the login modal will show instantly when the app loads.
   const [email, setEmail] = useState(""); // Stores user email input
   const [password, setPassword] = useState(""); // Stores user password input
+  const [selectedLocation, setSelectedLocation] = useState(""); // Stores selected location
+  const [selectedPropertyType, setSelectedPropertyType] = useState(""); // Stores selected property type
+  
 
+  // used TouchableOpacity because it makes elements clickable like a fade effect when taped it can be used for text,icons , view
 
   const handleLogin = () => {
     console.log("Email:", email, "Password:", password); // Simulate login (Replace with API call if needed)
@@ -16,7 +22,7 @@ export default function HomeScreen() {
   };
 
   return (
-      <ScrollView style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logo}>WeFundEachOther</Text>
@@ -47,51 +53,94 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchBar}>
-        <TextInput style={styles.input} placeholder="Search for available properties" />
-        <TextInput style={styles.input} placeholder="Location" />
-        <TextInput style={styles.input} placeholder="Property Type" />
+    {/* Search Bar */}
+    <View style={styles.searchBar}>
+        {/* Search Input */}
+        <TextInput 
+            style={styles.input} 
+            placeholder="Search for available properties" 
+            placeholderTextColor="gray"
+        />
+
+        {/* Dropdowns Container (Row) */}
+        <View style={styles.dropdownContainer}>
+            {/* Location Dropdown */}
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={selectedLocation}
+                    onValueChange={(itemValue) => setSelectedLocation(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Location" value="" />
+                    <Picker.Item label="Dubai" value="dubai" />
+                    <Picker.Item label="Abu Dhabi" value="abu_dhabi" />
+                    <Picker.Item label="Sharjah" value="sharjah" />
+                    <Picker.Item label="Ajman" value="ajman" />
+                </Picker>
+            </View>
+
+            {/* Property Type Dropdown */}
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={selectedPropertyType}
+                    onValueChange={(itemValue) => setSelectedPropertyType(itemValue)}
+                    style={styles.picker}
+                >
+                    <Picker.Item label="Property Type" value="" />
+                    <Picker.Item label="Apartment" value="apartment" />
+                    <Picker.Item label="Villa" value="villa" />
+                    <Picker.Item label="Office" value="office" />
+                    <Picker.Item label="Commercial Space" value="commercial" />
+                </Picker>
+            </View>
+        </View>
+
+        {/* Search Button */}
         <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Search Now</Text>
+            <Text style={styles.buttonText}>Search Now</Text>
         </TouchableOpacity>
-      </View>
-
-    {
-    /* Property Listings */}
-    <Text style={styles.sectionTitle}>Popular Property Listings</Text>
-    <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.properties}>
-      <View style={styles.property}>
-        <Text style={styles.propertyTitle}>AED 800,000</Text>
-        <Text style={styles.propertyDesc}>Luxury Apartment - 1,200 sqft</Text>
-        <Text style={styles.propertyLocation}>Downtown Dubai</Text>
-      </View>
-
-      <View style={styles.property}>
-        <Text style={styles.propertyTitle}>AED 1,500,000</Text>
-        <Text style={styles.propertyDesc}>Beachfront Villa - 5,000 sqft</Text>
-        <Text style={styles.propertyLocation}>Palm Jumeirah</Text>
-      </View>
-
-      <View style={styles.property}>
-        <Text style={styles.propertyTitle}>AED 950,000</Text>
-        <Text style={styles.propertyDesc}>Modern Townhouse - 2,500 sqft</Text>
-        <Text style={styles.propertyLocation}>Jumeirah Village Circle</Text>
-      </View>
-
-      <View style={styles.property}>
-        <Text style={styles.propertyTitle}>AED 2,000,000</Text>
-        <Text style={styles.propertyDesc}>Penthouse - 3,800 sqft</Text>
-        <Text style={styles.propertyLocation}>Burj Khalifa Area</Text>
-      </View>
-    </ScrollView>
+    </View>
 
 
-        //this one down needs some imporvements 
-      {/* Key Features */} 
+
+      {/* Property Listings */}
+      <Text style={styles.sectionTitle}>Popular Property Listings</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.properties}>
+        <View style={styles.property}>
+          <Text style={styles.propertyTitle}>AED 800,000</Text>
+          <Text style={styles.propertyDesc}>Luxury Apartment - 1,200 sqft</Text>
+          <Text style={styles.propertyLocation}>Downtown Dubai</Text>
+        </View>
+
+        <View style={styles.property}>
+          <Text style={styles.propertyTitle}>AED 1,500,000</Text>
+          <Text style={styles.propertyDesc}>Beachfront Villa - 5,000 sqft</Text>
+          <Text style={styles.propertyLocation}>Palm Jumeirah</Text>
+        </View>
+
+        <View style={styles.property}>
+          <Text style={styles.propertyTitle}>AED 950,000</Text>
+          <Text style={styles.propertyDesc}>Modern Townhouse - 2,500 sqft</Text>
+          <Text style={styles.propertyLocation}>Jumeirah Village Circle</Text>
+        </View>
+
+        <View style={styles.property}>
+          <Text style={styles.propertyTitle}>AED 2,000,000</Text>
+          <Text style={styles.propertyDesc}>Penthouse - 3,800 sqft</Text>
+          <Text style={styles.propertyLocation}>Burj Khalifa Area</Text>
+        </View>
+
+        <View style={styles.property}>
+          <Text style={styles.propertyTitle}>AED 3,000,000</Text>
+          <Text style={styles.propertyDesc}>Penthouse - 4.900 sqft</Text>
+          <Text style={styles.propertyLocation}>Burj Khalifa Apartment</Text>
+        </View>
+      </ScrollView>
+
+      {/* Key Features ()used .mao so that it can go thourgh loop instead of making it one by one */}
       <Text style={styles.sectionTitle}>Our Key Features</Text>
       <View style={styles.featureContainer}>
-        {["Easy Sign Up", "Real Estate Crowdfunding", "Secure and Reliable"].map((feature, index) => (
+        {["Easy Sign Up   ", "Real Estate Crowdfunding", "Secure and Reliable"].map((feature, index) => (
           <View key={index} style={styles.feature}>
             <Text style={styles.featureTitle}>{feature}</Text>
             <TouchableOpacity style={styles.button}>
@@ -102,45 +151,50 @@ export default function HomeScreen() {
       </View>
 
       {/* Testimonials */}
-        <Text style={styles.sectionTitle}>What Our Users Say</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonials}>
+      <Text style={styles.sectionTitle}>What Our Users Say</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.testimonials}>
+        <View style={styles.testimonial}>
+          <Text style={styles.testimonialText}>
+            "This platform made real estate investing so simple and accessible!"
+          </Text>
+          <Text style={styles.testimonialUser}>- User 1</Text>
+        </View>
 
-          <View style={styles.testimonial}>
-            <Text style={styles.testimonialText}>
-              "This platform made real estate investing so simple and accessible!"
-            </Text>
-            <Text style={styles.testimonialUser}>- User 1</Text>
-          </View>
+        <View style={styles.testimonial}>
+          <Text style={styles.testimonialText}>
+            "I was able to invest in properties with minimal effort. Highly recommend!"
+          </Text>
+          <Text style={styles.testimonialUser}>- User 2</Text>
+        </View>
+        <View style={styles.testimonial}>
+          <Text style={styles.testimonialText}>
+            "I was able to invest in properties with minimal effort. Highly recommend!"
+          </Text>
+          <Text style={styles.testimonialUser}>- User 3</Text>
+        </View>
+        <View style={styles.testimonial}>
+          <Text style={styles.testimonialText}>
+            "I was able to invest in properties with minimal effort. Highly recommend!"
+          </Text>
+          <Text style={styles.testimonialUser}>- User 4</Text>
+        </View>
 
-          <View style={styles.testimonial}>
-            <Text style={styles.testimonialText}>
-              "I was able to invest in properties with minimal effort. Highly recommend!"
-            </Text>
-            <Text style={styles.testimonialUser}>- User 2</Text>
-          </View>
+        <View style={styles.testimonial}>
+          <Text style={styles.testimonialText}>
+            "A seamless experience! Great support and easy investment process."
+          </Text>
+          <Text style={styles.testimonialUser}>- User 5</Text>
+        </View>
 
-          <View style={styles.testimonial}>
-            <Text style={styles.testimonialText}>
-              "A seamless experience! Great support and easy investment process."
-            </Text>
-            <Text style={styles.testimonialUser}>- User 3</Text>
-          </View>
+        <View style={styles.testimonial}>
+          <Text style={styles.testimonialText}>
+            "WeFundEachOther helped me diversify my portfolio without huge upfront costs!"
+          </Text>
+          <Text style={styles.testimonialUser}>- User 6</Text>
+        </View>
+      </ScrollView>
 
-          <View style={styles.testimonial}>
-            <Text style={styles.testimonialText}>
-              "WeFundEachOther helped me diversify my portfolio without huge upfront costs!"
-            </Text>
-            <Text style={styles.testimonialUser}>- User 4</Text>
-          </View>
-
-        </ScrollView>
-
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>© 2024 WeFundEachOther. All rights reserved.</Text>
-      </View>
-
+    
 
       {/* Login Modal (Improved) */}
       <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
@@ -182,31 +236,21 @@ const styles = StyleSheet.create({
       header: { 
         flexDirection: "row",  // Aligns elements side by side
         justifyContent: "space-between", // Places logo on left, menu on right
-        padding: 15, // Adds spacing
+        padding: 10, // Adds spacing
         backgroundColor: "#fff", // White background for the header
         elevation: 3 // Adds a subtle shadow for depth
       },
-
-      /* Logo Styling */
-      logo: { 
-        fontSize: 20, // Text size
-        fontWeight: "bold", // Makes text bold
-        color: "#333" // Dark gray color
-      },
-
-      /* Login Button in Header */
-      loginButton: { 
-        color: "#007bff", // Blue text color
-        fontWeight: "bold" // Makes text bold
-      },
-
-      /* Hero Section (Welcome Banner) */
+      /* Hero Section (Welcome Banner under the we fund logo) */
       hero: { 
         padding: 20, // Adds spacing inside
         backgroundColor: "#CAD6EF", // Light blue background
-        alignItems: "center" // Centers text and button
+        alignItems: "flex-start", 
+        paddingLeft: 40, 
+        height: 350, // Increase the height
+        justifyContent: "flex-end", // Moves content lower
+        paddingBottom: 80, // Adjust to move content into red area
       },
-
+      
       heroTitle: { 
         fontSize: 24, // Large text for title
         fontWeight: "bold" // Makes title bold
@@ -218,20 +262,90 @@ const styles = StyleSheet.create({
         textAlign: "center" // Centers text
       },
 
-      /* Search Bar */
-      searchBar: { 
-        padding: 20, // Adds spacing around the search section
-        backgroundColor: "#fff", // White background
-        alignItems: "center" // Centers search inputs
+      dropdownContainer: {
+        flexDirection: "row",  
+        justifyContent: "space-between",
+        width: "35%",  // Reduce width to shrink elements
+        alignSelf: "center",
+        marginVertical: 5,  // Reduce spacing
+    },
+    
+        pickerContainer: { 
+          flex: 1,
+          borderWidth: 1,
+          borderColor: "lightgray",
+          borderRadius: 6,
+          height: 35,  // Reduce height
+          justifyContent: "center",
+          overflow: "hidden",
+          marginHorizontal: 4,  // Reduce spacing between items
+      },
+      
+      picker: {
+          height: 35,  // Reduce height
+          fontSize: 12,  // Make text smaller
+          backgroundColor: "white",
+          color: "black",
+      },
+      
+      
+        searchBar: { 
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: 10,  // Reduce padding
+            backgroundColor: "whitesmoke",
+            width: "70%",  // Slightly reduce width
+            alignSelf: "center",
+            borderRadius: 3,  // Slightly smaller radius
+            shadowColor: "black",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            elevation: 2, // Lighter shadow
+            fontSize:10,
+            marginTop: 20
+        },
+        
+        input: { 
+          width: "20%",
+          flex: 2,
+          height: 35,  // Reduce height
+          paddingHorizontal: 8,  // Reduce padding
+          fontSize: 12,  // Make text smaller
+          borderWidth: 1,
+          borderColor: "lightgray",
+          borderRadius: 6,
+          backgroundColor: "white",
+          marginHorizontal: 8, 
+           
+      },
+        
+      button: { 
+        backgroundColor: "blue",
+        paddingVertical: 8,  // Adjust height
+        paddingHorizontal: 12,  // Adjust width
+        borderRadius: 6,
+        alignItems: "center",
+    },
+
+    buttonText: {
+        fontSize: 12,  // Make text smaller
+        color: "white",
+        fontWeight: "bold",
+    },
+  
+      /* Logo Styling */
+      logo: { 
+        fontSize: 20, // Text size
+        fontWeight: "bold", // Makes text bold
+        color: "#333", // Dark gray color
       },
 
-      input: { 
-        width: "90%", // Makes inputs fill most of the width
-        padding: 10, // Adds spacing inside the input
-        marginBottom: 10, // Space between input fields
-        borderWidth: 1, // Adds a thin border
-        borderRadius: 5, // Slightly rounded corners
-        borderColor: "#ddd" // Light gray border
+      /* Login Button in Header */
+      loginButton: { 
+        color: "#007bff", // Blue text color
+        fontWeight: "bold" // Makes text bold
       },
 
       /* Section Titles (e.g. "Popular Properties", "Testimonials") */
@@ -282,7 +396,7 @@ const styles = StyleSheet.create({
 
       feature: { 
         width: 150, // Box width for each feature
-        padding: 15, // Adds space inside the box
+        padding: 20, // Adds space inside the box
         backgroundColor: "#f8f9fa", // Light gray background
         borderRadius: 10, // Rounded corners
         margin: 5, // Space between feature boxes
@@ -291,7 +405,8 @@ const styles = StyleSheet.create({
 
       featureTitle: { 
         fontSize: 16, // Medium size text
-        fontWeight: "bold" // Bold text for emphasis
+        fontWeight: "bold", // Bold text for emphasis
+        marginBottom: 20
       },
 
       /* Testimonials Section */
@@ -317,21 +432,6 @@ const styles = StyleSheet.create({
         fontSize: 14, // Same size as quote text
         fontWeight: "bold", // Makes user name bold
         textAlign: "right" // Aligns username to the right
-      },
-
-      /* Buttons */
-      button: { 
-        backgroundColor: "#000", // Black button
-        padding: 10, // Space inside button
-        borderRadius: 5, // Slightly rounded edges
-        alignItems: "center", // Centers text inside button
-        marginTop: 10 // Space above button
-      },
-
-      buttonText: { 
-        color: "#fff", // White text
-        fontSize: 16, // Standard size
-        fontWeight: "bold" // Bold text for emphasis
       },
 
       /* Footer */
