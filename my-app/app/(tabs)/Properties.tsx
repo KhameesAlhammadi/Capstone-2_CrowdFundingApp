@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as Progress from 'react-native-progress';
 import {
   Text,
   View,
@@ -96,21 +97,29 @@ export default function PropertiesScreen() {
       <Text style={styles.header}>Properties</Text>
 
       <FlatList
-        data={properties}
-        keyExtractor={(item) => item.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.propertyList}
-        renderItem={({ item }) => (
-          <View style={styles.propertyContainer}>
-            <Image source={{ uri: item.imageUrl }} style={styles.propertyImage} />
-            <Text style={styles.propertyTitle}>{item.property_name}</Text>
-            <Text style={styles.propertyLocation}>{item.location}</Text>
-            <Text style={styles.propertyRooms}>{item.rooms} Rooms</Text>
-            <Text style={styles.propertyPrice}>{item.price} AED</Text>
-          </View>
-        )}
+  data={properties}
+  keyExtractor={(item) => item.id}
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.propertyList}
+  renderItem={({ item }) => (
+    <View style={styles.propertyContainer}>
+      <Image source={{ uri: item.imageUrl }} style={styles.propertyImage} />
+      <Text style={styles.propertyTitle}>{item.property_name}</Text>
+      <Text style={styles.propertyLocation}>{item.location}</Text>
+      <Text style={styles.propertyRooms}>{item.rooms} </Text>
+      <Text style={styles.propertyPrice}>{item.price} </Text>
+      
+      {/* Progress bar added here */}
+      <Progress.Bar 
+        progress={0.5} // you can replace 0.5 with a dynamic value if needed
+        width={150}
+        color="#2196f3"
+        style={{ marginTop: 8 }}
       />
+    </View>
+  )}
+/>
 
       <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
         <AntDesign name="plus" size={30} color="white" />
@@ -186,7 +195,7 @@ export default function PropertiesScreen() {
 const styles = {
   container: { flex: 1, backgroundColor: '#fff', paddingTop: 50, alignItems: 'center' },
   header: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 15 },
-  propertyList: { paddingHorizontal: 10, alignItems: 'center' },
+  propertyList: { paddingHorizontal: 10, alignItems: 'center'},
   propertyContainer: { marginRight: 15, alignItems: 'center', backgroundColor: '#f9f9f9', padding: 10, borderRadius: 8 },
   propertyImage: { width: 150, height: 150, borderRadius: 5 },
   propertyTitle: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginTop: 5 },
