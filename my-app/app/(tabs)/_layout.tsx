@@ -1,5 +1,10 @@
 // import { Tabs } from "expo-router";
 // import Ionicons from "@expo/vector-icons/Ionicons";
+// // import AuthPage from "../index";
+// // import InvestPage from "../invest";
+// // import HomeScreen from "../home";
+// // import ContactScreen from "../ContactUS";
+// // import PropertiesScreen from "./Properties";
 
 // export default function TabLayout() {
 //   return (
@@ -18,7 +23,7 @@
 //       <Tabs.Screen
 //         name="index"
 //         options={{
-//           title: "Home",
+//           title: "Login",
 //           tabBarIcon: ({ color, focused }) => (
 //             <Ionicons name={focused ? "home-sharp" : "home-outline"} color={color} size={24} />
 //           ),
@@ -47,7 +52,15 @@
 
 //       {/* Hiding Login Tab Properly */}
 //       <Tabs.Screen
-//         name="Login"
+//         name="home"
+//         options={{
+//           href: null, // Completely removes it from navigation
+//           tabBarStyle: { display: "none" }, // Ensures no extra space is left
+//           title: "Login Page", // Just for internal reference
+//         }}
+//       />
+//       <Tabs.Screen
+//         name="invest"
 //         options={{
 //           href: null, // Completely removes it from navigation
 //           tabBarStyle: { display: "none" }, // Ensures no extra space is left
