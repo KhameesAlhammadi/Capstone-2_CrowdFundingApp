@@ -8,6 +8,7 @@ import {
   StatusBar,
   Image,
   Animated,
+  ScrollView
 } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 
@@ -55,6 +56,7 @@ export default function PaymentScreen() {
     paymentMethod === 'paypal' || (cardNumber.length === 19 && expiry.length === 5 && cvv.length === 3);
 
   return (
+    <ScrollView>
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <Text style={styles.header}>Choose Payment Method</Text>
@@ -149,6 +151,7 @@ export default function PaymentScreen() {
         </TouchableOpacity>
       </View>
     </View>
+    </ScrollView>
   );
 }
 
