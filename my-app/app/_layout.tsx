@@ -12,10 +12,10 @@ export default function MyStack()
 {
   return (
     <Stack.Navigator initialRouteName="Invest">
-      <Stack.Screen name="SignIn" component={AuthPage} />
-      <Stack.Screen name="Invest" component={InvestPage} />
-      <Stack.Screen name="home" component={HomeScreen} /> 
-      <Stack.Screen name="Contact us" component={ContactScreen} /> 
+      <Stack.Screen name="SignIn" component={AuthPage}  options={{ headerShown: false }}/>
+      <Stack.Screen name="Invest" component={InvestPage} options={{ headerShown: false }} />
+      <Stack.Screen name="home" component={HomeScreen} options={{ headerShown: false }}/> 
+      <Stack.Screen name="Contact us" component={ContactScreen} options={{ headerShown: false }}/> 
     </Stack.Navigator>
   );
 }

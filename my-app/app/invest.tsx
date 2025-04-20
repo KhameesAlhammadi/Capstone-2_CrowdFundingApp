@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView } from "react-native";
 import * as Progress from 'react-native-progress';
 import { ref, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebaseconfig/firebase';
+import { storage, auth, db} from '../firebaseconfig/firebase';
 
 export default function InvestPage() {
   const [investmentAmount, setInvestmentAmount] = useState(0);
@@ -66,21 +66,22 @@ export default function InvestPage() {
 
       <View style={styles.stickyControlPanel}>
         <View style={styles.amountControl}>
-          <TouchableOpacity style={styles.adjustButton} onPress={decreaseAmount}>
-            <Text style={styles.adjustText}>-</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.adjustButton} onPress={decreaseAmount}>
+              <Text style={styles.adjustText}>-</Text>
+            </TouchableOpacity>
 
-          <Text style={styles.amountText}>AED {investmentAmount}</Text>
+    <Text style={styles.amountText}>AED {investmentAmount}</Text>
 
-          <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
-            <Text style={styles.adjustText}>+</Text>
-          </TouchableOpacity>
-        </View>
+    <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
+      <Text style={styles.adjustText}>+</Text>
+    </TouchableOpacity>
 
-        <TouchableOpacity style={styles.investButton} onPress={handleInvest}>
-          <Text style={styles.investButtonText}>Invest Now</Text>
-        </TouchableOpacity>
-      </View>
+    <TouchableOpacity style={styles.investInlineButton} onPress={handleInvest}>
+      <Text style={styles.investInlineButtonText}>Invest Now</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+
     </View>
   );
 }
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
+    height:90,
     backgroundColor: "#fff",
     paddingVertical: 16,
     paddingHorizontal: 24,
@@ -205,4 +207,17 @@ const styles = StyleSheet.create({
     elevation: 10,
     alignItems: "center",
   },
+  investInlineButton: {
+    backgroundColor: "#4caf50",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    marginLeft: 12,
+  },
+  investInlineButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  
 });
