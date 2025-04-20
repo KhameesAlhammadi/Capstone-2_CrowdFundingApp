@@ -81,15 +81,17 @@ export default function InvestPage() {
 					try 
 					{
 						// Add a new document to the 'investors' collection
-						const docRef = await addDoc(collection(db, "investors"), {
-						userId: currentUser.uid, // Store the user's UID
-						email: currentUser.email, // Store the user's email (optional)
-						investmentAmount: investmentAmount, // Amount the user invested
-						timestamp: new Date(), // Timestamp for when the investment was made
-						});
+						// const docRef = await addDoc(collection(db, "investors"), {
+						// userId: currentUser.uid, // Store the user's UID
+						// email: currentUser.email, // Store the user's email (optional)
+						// investmentAmount: investmentAmount, // Amount the user invested
+						// timestamp: new Date(), // Timestamp for when the investment was made
+						// });
 
-						console.log("Investment saved with ID:", docRef.id);
-						alert(`You have invested AED ${investmentAmount}`);
+						// console.log("Investment saved with ID:", docRef.id);
+						// alert(`You have invested AED ${investmentAmount}`);
+
+            navigation.navigate("payment");
 					} 
 					
 					catch (e) {
