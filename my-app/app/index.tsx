@@ -70,6 +70,7 @@ export default function AuthPage() {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         setSuccessMessage("Logged in successfully! 🎉");
+        navigation.navigate("invest");
       } catch (err) {
         setError("Login failed. Please check your credentials.");
       }
@@ -101,6 +102,7 @@ export default function AuthPage() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       setSuccessMessage("Logged in with Google successfully! 🎉");
+      navigation.navigate("home");
     } catch (err) {
       setError("Google Sign-In failed. Try again.");
     }

@@ -2,13 +2,34 @@ import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView } from "react-native";
 import * as Progress from 'react-native-progress';
 import { ref, getDownloadURL } from 'firebase/storage';
-import { storage, auth, db} from '../firebaseconfig/firebase';
+import { storage, auth, db } from '../firebaseconfig/firebase';
+import { onAuthStateChanged, User } from "firebase/auth";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
 export default function InvestPage() {
   const [investmentAmount, setInvestmentAmount] = useState(0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+
+  // handles user state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User is signed in:", user.email);
+        setCurrentUser(user);
+      } else {
+        console.log("No user is signed in.");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
+
+  // to fetch an image
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
@@ -27,7 +48,29 @@ export default function InvestPage() {
 
   const increaseAmount = () => setInvestmentAmount(prev => prev + 100);
   const decreaseAmount = () => setInvestmentAmount(prev => (prev > 0 ? prev - 100 : 0));
-  const handleInvest = () => alert(`You have invested AED ${investmentAmount}`);
+
+  
+  const handleInvest = async () => {
+    if (currentUser) {
+      try {
+        // Add a new document to the 'investors' collection
+        const docRef = await addDoc(collection(db, "investors"), {
+          userId: currentUser.uid, // Store the user's UID
+          email: currentUser.email, // Store the user's email (optional)
+          investmentAmount: investmentAmount, // Amount the user invested
+          timestamp: new Date(), // Timestamp for when the investment was made
+        });
+
+        console.log("Investment saved with ID:", docRef.id);
+        alert(`You have invested AED ${investmentAmount}`);
+      } catch (e) {
+        console.error("Error adding investment: ", e);
+        alert("There was an error processing your investment. Please try again.");
+      }
+    } else {
+      alert("You need to be signed in to make an investment.");
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -60,7 +103,6 @@ export default function InvestPage() {
           </View>
         </View>
 
-        {/* 👇 Spacer to create space between card and sticky panel */}
         <View style={{ height: 140 }} />
       </ScrollView>
 
@@ -70,22 +112,20 @@ export default function InvestPage() {
               <Text style={styles.adjustText}>-</Text>
             </TouchableOpacity>
 
-    <Text style={styles.amountText}>AED {investmentAmount}</Text>
+            <Text style={styles.amountText}>AED {investmentAmount}</Text>
 
-    <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
-      <Text style={styles.adjustText}>+</Text>
-    </TouchableOpacity>
+            <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
+              <Text style={styles.adjustText}>+</Text>
+            </TouchableOpacity>
 
-    <TouchableOpacity style={styles.investInlineButton} onPress={handleInvest}>
-      <Text style={styles.investInlineButtonText}>Invest Now</Text>
-    </TouchableOpacity>
-  </View>
-</View>
-
+            <TouchableOpacity style={styles.investInlineButton} onPress={handleInvest}>
+              <Text style={styles.investInlineButtonText}>Invest Now</Text>
+            </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     padding: 16,

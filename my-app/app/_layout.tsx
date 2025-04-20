@@ -11,11 +11,11 @@ const Stack = createNativeStackNavigator();
 export default function MyStack() 
 {
   return (
-    <Stack.Navigator initialRouteName="SignIn">
-      <Stack.Screen name="SignIn" component={AuthPage}  options={{ headerShown: false }}/>
-      <Stack.Screen name="Invest" component={InvestPage} options={{ headerShown: false }} />
+    <Stack.Navigator initialRouteName="signIn">
+      <Stack.Screen name="signIn" component={AuthPage}  options={{ headerShown: false }}/>
+      <Stack.Screen name="invest" component={InvestPage} options={{ headerShown: false }} />
       <Stack.Screen name="home" component={HomeScreen} options={{ headerShown: false }}/> 
-      <Stack.Screen name="Contact us" component={ContactScreen} options={{ headerShown: false }}/> 
+      <Stack.Screen name="contact us" component={ContactScreen} options={{ headerShown: false }}/> 
     </Stack.Navigator>
   );
 }
