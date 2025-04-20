@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "../firebaseconfig/firebase";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { auth, db } from "../firebaseconfig/firebase";
+import { doc, setDoc , } from "firebase/firestore";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [isForgotPassword, setIsForgotPassword] = useState(false); // Added forgot password state
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>(); // add this to use the navigation
@@ -29,7 +34,12 @@ export default function AuthPage() {
 
     if (isSignUp) {
       if (!firstName.trim() || !lastName.trim()) {
-        setError("First Name and Last Name are required.");
+        setError("First and Last Name are required.");
+        return;
+      }
+
+      if (!phoneNumber.trim() || phoneNumber.length < 7) {
+        setError("Phone number is required.");
         return;
       }
 
@@ -37,39 +47,50 @@ export default function AuthPage() {
         setError("Passwords do not match. Try again!");
         return;
       }
-    }
 
-    try {
-      if (isSignUp)
-        {
-        await createUserWithEmailAndPassword(auth, email, password);
-        setSuccessMessage(`Account created successfully! 🎉 Welcome, ${firstName} ${lastName}!`);
-      } else {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userId = userCredential.user.uid;
+
+        const userDetails = {
+          firstName,
+          lastName,
+          phoneNumber,
+          email,
+          password, // Note: Do not store plain passwords in production
+        };
+
+        await setDoc(doc(db, "users", userId), userDetails);
+
+        setSuccessMessage(`Account created successfully! Welcome, ${firstName} ${lastName}! 🎉`);
+      } catch (err) {
+        setError("An error occurred during sign up. Please try again.");
+      }
+    } else {
+      try {
         await signInWithEmailAndPassword(auth, email, password);
-        alert("Logged in successfully! 🎉");
-        navigation.navigate('Profile'); // Navigate to ProfilePage
-      } 
-    } catch (err: any) {
-      setError("An error occurred. Please try again.");
+        setSuccessMessage("Logged in successfully! 🎉");
+      } catch (err) {
+        setError("Login failed. Please check your credentials.");
+      }
     }
   };
 
-  const handleResetPassword = () => {
+  const handleForgotPassword = async () => {
     setError("");
     setSuccessMessage("");
 
-    if (!newPassword.trim() || !confirmNewPassword.trim()) {
-      setError("Both fields are required.");
+    if (!email.trim()) {
+      setError("Please enter your email to reset password.");
       return;
     }
 
-    if (newPassword !== confirmNewPassword) {
-      setError("Passwords do not match. Try again!");
-      return;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setSuccessMessage("Password reset email sent! Check your inbox.");
+    } catch (err) {
+      setError("Failed to send reset email. Please check your email and try again.");
     }
-
-    setSuccessMessage("Password reset successful! 🎉");
-    setIsForgotPassword(false); // Switch back to sign-in form
   };
 
   const handleGoogleSignIn = async () => {
@@ -79,10 +100,8 @@ export default function AuthPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      alert("Logged in with Google successfully! 🎉");
-      navigation.navigate('Profile'); // Navigate to ProfilePage
-
-    } catch (err: any) {
+      setSuccessMessage("Logged in with Google successfully! 🎉");
+    } catch (err) {
       setError("Google Sign-In failed. Try again.");
     }
   };
@@ -92,71 +111,87 @@ export default function AuthPage() {
   return (
     <View style={styles.container}>
       <View style={styles.box}>
-        {!isForgotPassword ? ( // Show login/signup form
-          <View>
-            <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
+        <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
 
-            {isSignUp && (
-              <View>
-                <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
-                <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
-              </View>
-            )}
-
-            <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-            <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
-
-            {!isSignUp && (
-              <TouchableOpacity onPress={() => setIsForgotPassword(true)}>
-                <Text style={styles.toggleText}>Forgot Password?</Text>
-              </TouchableOpacity>
-            )}
-
-            {isSignUp && (
-              <TextInput style={styles.input} placeholder="Confirm Password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
-            )}
-
-            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
-            </TouchableOpacity>
-
-            {/* Google Sign-In Button */}
-            <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-              <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
-              <Text style={styles.buttonText}>Sign in with Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => {
-                setIsSignUp(!isSignUp);
-                setError("");
-                setSuccessMessage("");
-                setFirstName("");
-                setLastName("");
-              }}
-            >
-              <Text style={styles.toggleText}>{isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}</Text>
-            </TouchableOpacity>
-          </View>
-        ) : ( // Show forgot password form
-          <View>
-            <Text style={styles.title}>Reset Password</Text>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
-
-            <TextInput style={styles.input} placeholder="Enter New Password" value={newPassword} onChangeText={setNewPassword} secureTextEntry />
-            <TextInput style={styles.input} placeholder="Confirm New Password" value={confirmNewPassword} onChangeText={setConfirmNewPassword} secureTextEntry />
-
-            <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
-              <Text style={styles.buttonText}>Reset Password</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setIsForgotPassword(false)}>
-              <Text style={styles.toggleText}>Back to Sign In</Text>
-            </TouchableOpacity>
-          </View>
+        {isSignUp && (
+          <>
+            <TextInput
+              style={styles.input}
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+            />
+          </>
         )}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+
+        {isSignUp && (
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+          />
+        )}
+
+        {!isSignUp && (
+          <TouchableOpacity onPress={handleForgotPassword}>
+            <Text style={styles.toggleText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
+        </TouchableOpacity>
+
+        {/* Google Sign-In Button */}
+        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+          <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
+          <Text style={styles.buttonText}>Sign in with Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setIsSignUp(!isSignUp);
+            setError("");
+            setSuccessMessage("");
+          }}
+        >
+          <Text style={styles.toggleText}>
+            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -193,6 +228,7 @@ const styles = StyleSheet.create({
   success: {
     color: "green",
     marginBottom: 10,
+    textAlign: "center",
   },
   input: {
     width: "100%",
