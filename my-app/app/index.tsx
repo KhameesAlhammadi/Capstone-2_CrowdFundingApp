@@ -17,6 +17,7 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -35,6 +36,11 @@ export default function AuthPage() {
         return;
       }
 
+      if (!phoneNumber.trim() || phoneNumber.length < 7) {
+        setError("Phone number is required.");
+        return;
+      }
+
       if (password !== confirmPassword) {
         setError("Passwords do not match. Try again!");
         return;
@@ -47,8 +53,9 @@ export default function AuthPage() {
         const userDetails = {
           firstName,
           lastName,
+          phoneNumber,
           email,
-          password, 
+          password, // Note: Do not store plain passwords in production
         };
 
         await setDoc(doc(db, "users", userId), userDetails);
@@ -117,6 +124,13 @@ export default function AuthPage() {
               placeholder="Last Name"
               value={lastName}
               onChangeText={setLastName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
             />
           </>
         )}
