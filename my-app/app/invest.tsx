@@ -5,6 +5,7 @@ import { ref, getDownloadURL } from 'firebase/storage';
 import { storage, auth, db } from '../firebaseconfig/firebase';
 import { onAuthStateChanged, User } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { useRoute, RouteProp } from '@react-navigation/native';
 
 export default function InvestPage() {
   const [investmentAmount, setInvestmentAmount] = useState(0);
@@ -12,6 +13,23 @@ export default function InvestPage() {
   const [loadingImage, setLoadingImage] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+  const route = useRoute();
+ 
+
+  type RouteParams = {
+	property: {
+	  city: String;
+	  imageUrl: string;
+	  description: string;
+	  location: string;
+	  type: number;
+	  rooms: number;
+	  price: number;
+	  property_name: string;
+	};
+  };
+//   const route = useRoute<RouteProp<RouteParams, 'params'>>();
+  const { property } = route.params;
 
   // handles user state
   useEffect(() => {
@@ -33,7 +51,7 @@ export default function InvestPage() {
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
-        const imageRef = ref(storage, 'images/1740340619451');
+        const imageRef = ref(storage, property.imageUrl); // Use dynamic path
         const url = await getDownloadURL(imageRef);
         setImageUrl(url);
       } catch (error) {
@@ -51,22 +69,32 @@ export default function InvestPage() {
 
   
   const handleInvest = async () => {
-    if (currentUser) {
-      try {
-        // Add a new document to the 'investors' collection
-        const docRef = await addDoc(collection(db, "investors"), {
-          userId: currentUser.uid, // Store the user's UID
-          email: currentUser.email, // Store the user's email (optional)
-          investmentAmount: investmentAmount, // Amount the user invested
-          timestamp: new Date(), // Timestamp for when the investment was made
-        });
+    if (currentUser) 
+		{
+			if (investmentAmount > 0)
+				{
+					try 
+					{
+						// Add a new document to the 'investors' collection
+						const docRef = await addDoc(collection(db, "investors"), {
+						userId: currentUser.uid, // Store the user's UID
+						email: currentUser.email, // Store the user's email (optional)
+						investmentAmount: investmentAmount, // Amount the user invested
+						timestamp: new Date(), // Timestamp for when the investment was made
+						});
 
-        console.log("Investment saved with ID:", docRef.id);
-        alert(`You have invested AED ${investmentAmount}`);
-      } catch (e) {
-        console.error("Error adding investment: ", e);
-        alert("There was an error processing your investment. Please try again.");
-      }
+						console.log("Investment saved with ID:", docRef.id);
+						alert(`You have invested AED ${investmentAmount}`);
+					} 
+					
+					catch (e) {
+						console.error("Error adding investment: ", e);
+						alert("There was an error processing your investment. Please try again.");
+					}
+				}
+				else{
+					alert("cannot invest with 0 AED");
+				}
     } else {
       alert("You need to be signed in to make an investment.");
     }
@@ -85,9 +113,9 @@ export default function InvestPage() {
 
         <View style={styles.card}>
           <View style={styles.cardContent}>
-            <Text style={styles.propertyDetails}>🏠 2 • Ready • 🇦🇪 Dubai</Text>
-            <Text style={styles.propertyTitle}>2 Bed in Studio One Tower</Text>
-            <Text style={styles.propertyPrice}>AED 1,236,002</Text>
+            <Text style={styles.propertyDetails}>{property.rooms} rooms • Ready • 🇦🇪 {property.location} • {property.type}</Text>
+            <Text style={styles.propertyTitle}>{property.property_name}</Text>
+            <Text style={styles.propertyPrice}>{property.price} AED</Text>
 
             <View style={styles.progressContainer}>
               <Progress.Bar progress={0.45} width={null} color="#4caf50" borderRadius={4} />
@@ -95,10 +123,8 @@ export default function InvestPage() {
             </View>
 
             <View style={styles.statsContainer}>
-              <Text style={styles.stat}>Annualised Return: <Text style={styles.bold}>11.98%</Text></Text>
-              <Text style={styles.stat}>Annual Appreciation: <Text style={styles.bold}>6.84%</Text></Text>
-              <Text style={styles.stat}>Gross Yield: <Text style={styles.bold}>6.77%</Text></Text>
-              <Text style={styles.stat}>Net Yield: <Text style={styles.bold}>5.98%</Text></Text>
+              <Text style={styles.bold}>Details:</Text>
+			  <Text style={styles.stat}>{property.description}</Text>
             </View>
           </View>
         </View>
