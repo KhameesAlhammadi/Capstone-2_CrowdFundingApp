@@ -19,6 +19,8 @@ import { storage, auth, db } from '../../firebaseconfig/firebase';
 import { Picker } from '@react-native-picker/picker';
 import { AntDesign } from '@expo/vector-icons';
 
+import Header from '../header/header';
+
 // const db = getFirestore(firebaseApp);
 // const storage = getStorage(firebaseApp);
 
@@ -95,7 +97,11 @@ export default function PropertiesScreen() {
   };
 
   return (
+    <View style={{ flex: 1 }}>
+      {/* Sticky header outside scroll view */}
+      <Header />
     <View style={styles.container}>
+      
       <StatusBar barStyle="dark-content" />
       <Text style={styles.header}>Properties</Text>
 
@@ -126,6 +132,7 @@ export default function PropertiesScreen() {
   )}
   
 />
+
 
       <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
         <AntDesign name="plus" size={30} color="white" />
@@ -195,6 +202,7 @@ export default function PropertiesScreen() {
         </View>
       </Modal>
     </View>
+    </View>
   );
 }
 
@@ -233,7 +241,7 @@ const styles = {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 15,
+    // marginBottom: 0,
   },
   imagePicker: {
     width: '100%',

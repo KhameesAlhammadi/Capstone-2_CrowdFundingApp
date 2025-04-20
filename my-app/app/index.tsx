@@ -70,7 +70,7 @@ export default function AuthPage() {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         setSuccessMessage("Logged in successfully! 🎉");
-        navigation.navigate("ContactUS");
+        navigation.navigate("home");
       } catch (err) {
         setError("Login failed. Please check your credentials.");
       }

@@ -5,13 +5,18 @@ import { ref, getDownloadURL } from 'firebase/storage';
 import { storage, auth, db } from '../firebaseconfig/firebase';
 import { onAuthStateChanged, User } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import Header from "./header/header";
 
 export default function InvestPage() {
   const [investmentAmount, setInvestmentAmount] = useState(0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const navigation = useNavigation();
+
+  
 
   const route = useRoute();
  
@@ -100,9 +105,15 @@ export default function InvestPage() {
     }
   };
 
+  
+
   return (
     <View style={{ flex: 1 }}>
+      <Header />
       <ScrollView contentContainerStyle={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
         <View style={styles.cardImage}>
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.cardImageInner} resizeMode="cover" />
@@ -285,5 +296,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: -100,
+    zIndex: 1,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  backButtonText: {
+    color: "#007bff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  
   
 });

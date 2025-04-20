@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet , Linking} from "react-native";
+import Header from "./header/header";
+
+
+
 
 export default function ContactScreen() {
   const [name, setName] = useState("");
@@ -7,6 +11,7 @@ export default function ContactScreen() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
+  
 
   const handleSend = () => {
     if (!name || !email || !subject || !message) {
@@ -21,6 +26,9 @@ export default function ContactScreen() {
   };
 
   return (
+    <View style={{ flex: 1 }}>
+      {/* Sticky header outside scroll view */}
+      <Header />
     <ScrollView>
     <View style={styles.container}>
       {/* Header Section */}
@@ -38,9 +46,29 @@ export default function ContactScreen() {
           If you have any questions, feel free to send us a message using the form below,
           or contact us directly at:
         </Text>
-        <Text style={styles.contact}><Text style={styles.bold}>Email:</Text> contact@wefundeachother.com</Text>
-        <Text style={styles.contact}><Text style={styles.bold}>Phone:</Text> +971 512345678</Text>
-        <Text style={styles.contact}><Text style={styles.bold}>Address:</Text> Abu Dhabi, Higher Colleges Of Technology</Text>
+        <View style={styles.centeredContactInfo}>
+  <Text style={styles.contact}>
+    <Text style={styles.bold}>Email: </Text>
+    <Text
+      style={styles.link}
+      onPress={() => Linking.openURL('mailto:wefundeachotherteam@gmail.com')}
+    >
+      wefundeachotherteam@gmail.com
+    </Text>
+  </Text>
+
+  <Text style={styles.contact}>
+    <Text style={styles.bold}>Phone: </Text>
+    +971 512345678
+  </Text>
+
+  <Text style={styles.contact}>
+    <Text style={styles.bold}>Address: </Text>
+    Abu Dhabi, Higher Colleges Of Technology
+  </Text>
+</View>
+
+
 
         {/* Contact Form */}
         <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} />
@@ -56,12 +84,10 @@ export default function ContactScreen() {
        When you tap it, it fades a little, showing that it's been pressed. */}
       </View>
        
-      {/* Footer Section */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>© 2024 WeFundEachOther. All rights reserved.</Text>
-      </View>
+      
     </View>
     </ScrollView>
+    </View>
   );
 }
 
@@ -76,7 +102,7 @@ const styles = StyleSheet.create({
   menuIcon: { fontSize: 24, fontWeight: "bold", color: "#333" },
 
   /* Contact Box Styles */
-  contactBox: { backgroundColor: "#fff", padding: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5, width: "90%", marginTop: 20 },
+  contactBox: { backgroundColor: "#fff", padding: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 5, width: "100%", marginTop: 20 },
   title: { fontSize: 24, fontWeight: "bold", color: "#007bff", textAlign: "center", marginBottom: 10 },
   info: { textAlign: "center", marginBottom: 10 },
   contact: { textAlign: "center", marginBottom: 5 },
@@ -87,10 +113,21 @@ const styles = StyleSheet.create({
   textArea: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 5, height: 100, textAlignVertical: "top" },
 
   /* Button Styles */
-  button: { backgroundColor: "#000", padding: 12, borderRadius: 5, alignItems: "center" },
+  button: { backgroundColor: "#000", padding: 12, borderRadius: 5, alignItems: "center", marginTop:20 },
   buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
 
   /* Footer Styles */
   footer: { marginTop: 20, backgroundColor: "#000", width: "100%", padding: 15, alignItems: "center" },
   footerText: { color: "white", fontSize: 14 },
+  centeredContactInfo: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 20,
+},
+
+link: {
+  color: 'blue',
+  textDecorationLine: 'underline',
+},
+
 });
