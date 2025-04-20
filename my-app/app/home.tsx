@@ -5,7 +5,7 @@ import { getFirestore, collection, onSnapshot } from "firebase/firestore";
 import { storage, auth, db } from '../firebaseconfig/firebase';
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation
 
-import Header from "./header/header";
+import Header from "./Header/Headers";
 
 const { height, width } = Dimensions.get("window");
 
@@ -33,10 +33,10 @@ export default function HomeScreen() {
 
   // Testimonials Data
   const testimonialsData = [
-    { id: "1", text: "This platform made real estate investing simple!", user: "User 1" },
-    { id: "2", text: "Highly recommend! Easy investment process.", user: "User 2" },
-    { id: "3", text: "A seamless experience! Great support.", user: "User 3" },
-    { id: "4", text: "WeFundEachOther helped me invest without huge upfront costs!", user: "User 4" },
+    { id: "1", text: "This platform made real estate investing simple!", user: "Hussein" },
+    { id: "2", text: "Highly recommend! Easy investment process.", user: "Mohamed" },
+    { id: "3", text: "A seamless experience! Great support.", user: "Humaid" },
+    { id: "4", text: "WeFundEachOther helped me invest without huge upfront costs!", user: "Souad" },
   ];
   
   
@@ -62,7 +62,6 @@ useEffect(() => {
       {/* Sticky header outside scroll view */}
       <Header />
     <ScrollView style={styles.container}>
-      {/* Header */}
       
       <View style={styles.header}>
         <Text style={styles.logo}>WeFundEachOther</Text>
@@ -119,7 +118,7 @@ useEffect(() => {
         ].map((feature, index) => (
           <View key={index} style={styles.feature}>
             <Text style={styles.featureTitle}>{feature.title}</Text>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("index")}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("")}>
               {/* <Text style={styles.buttonText}>Explore</Text> */}
             </TouchableOpacity>
           </View>

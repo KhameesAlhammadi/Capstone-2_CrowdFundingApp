@@ -14,7 +14,7 @@ export default function MyStack()
 {
   return (
     <Stack.Navigator initialRouteName="home">
-      <Stack.Screen name="index" component={AuthPage}  options={{ headerShown: false }}/>
+      <Stack.Screen name="signIn" component={AuthPage}  options={{ headerShown: false }}/>
       <Stack.Screen name="invest" component={InvestPage} options={{ headerShown: false }} />
       <Stack.Screen name="home" component={HomeScreen} options={{ headerShown: false }}/> 
       <Stack.Screen name="ContactUS" component={ContactScreen} options={{ headerShown: false }}/>

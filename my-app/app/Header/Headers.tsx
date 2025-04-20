@@ -20,7 +20,7 @@ const Header = () => {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("index")}>
-        <Text style={styles.link}>SignUp/in</Text>
+        <Text style={styles.link}>SignUp - in</Text>
       </TouchableOpacity>
     </View>
   );

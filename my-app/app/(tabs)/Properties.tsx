@@ -19,7 +19,7 @@ import { storage, auth, db } from '../../firebaseconfig/firebase';
 import { Picker } from '@react-native-picker/picker';
 import { AntDesign } from '@expo/vector-icons';
 
-import Header from '../header/header';
+import Header from '../Header/Headers';
 
 // const db = getFirestore(firebaseApp);
 // const storage = getStorage(firebaseApp);

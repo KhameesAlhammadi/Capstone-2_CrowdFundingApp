@@ -6,7 +6,7 @@ import { storage, auth, db } from '../firebaseconfig/firebase';
 import { onAuthStateChanged, User } from "firebase/auth";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import Header from "./header/header";
+import Header from "./Header/Headers";
 
 export default function InvestPage() {
   const [investmentAmount, setInvestmentAmount] = useState(0);
@@ -109,6 +109,7 @@ export default function InvestPage() {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Sticky header outside scroll view */}
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>

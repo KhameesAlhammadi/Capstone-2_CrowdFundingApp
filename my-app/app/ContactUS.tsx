@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet , Linking} from "react-native";
-import Header from "./header/header";
+import Header from "./Header/Headers";
 
 
 

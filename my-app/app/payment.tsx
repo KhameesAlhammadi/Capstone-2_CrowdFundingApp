@@ -9,6 +9,10 @@ import {
   Image,
   Animated,
 } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
+
+
+
 
 export default function PaymentScreen() {
   const [amount, setAmount] = useState('');
@@ -18,6 +22,8 @@ export default function PaymentScreen() {
   const [message, setMessage] = useState('');
   const [payButtonScale] = useState(new Animated.Value(1));
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+
+  const navigation = useNavigation<any>();
 
   const handlePayment = () => {
     if (paymentMethod === 'paypal') {

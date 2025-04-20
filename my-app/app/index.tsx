@@ -57,7 +57,7 @@ export default function AuthPage() {
           lastName,
           phoneNumber,
           email,
-          password, // Note: Do not store plain passwords in production
+          password, 
         };
 
         await setDoc(doc(db, "users", userId), userDetails);
