@@ -120,7 +120,7 @@ export default function PropertiesScreen() {
       <Text style={styles.propertyTitle}>{item.property_name}</Text>
       <Text style={styles.propertyLocation}>{item.location}</Text>
       <Text style={styles.propertyRooms}>{item.rooms}</Text>
-      <Text style={styles.propertyPrice}>{item.price}</Text>
+      <Text style={styles.propertyPrice}>{item.price} AED</Text>
   
       <Progress.Bar
         progress={0.5} 

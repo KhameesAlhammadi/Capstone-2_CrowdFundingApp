@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Platform, ScrollView } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, db } from "../firebaseconfig/firebase";
-import { doc, setDoc , } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -19,36 +19,75 @@ export default function AuthPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    general: "",
+  });
   const [successMessage, setSuccessMessage] = useState("");
-  const navigation = useNavigation<any>(); // add this to use the navigation
+  const navigation = useNavigation<any>();
+
+  const phoneRegex = /^[0-9]{0,10}$/;
 
   const handleSubmit = async () => {
-    setError("");
+    let newErrors: any = {
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      general: "",
+    };
+    let hasError = false;
     setSuccessMessage("");
 
-    if (!email.trim() || !password.trim()) {
-      setError("Email and Password are required.");
+    if (isSignUp) {
+      if (!firstName.trim()) {
+        newErrors.firstName = "First name is required.";
+        hasError = true;
+      }
+      if (!lastName.trim()) {
+        newErrors.lastName = "Last name is required.";
+        hasError = true;
+      }
+      if (!phoneNumber.trim()) {
+        newErrors.phoneNumber = "Phone number is required.";
+        hasError = true;
+      } else if (!phoneRegex.test(phoneNumber)) {
+        newErrors.phoneNumber = "Phone number must be up to 10 digits.";
+        hasError = true;
+      }
+      if (!confirmPassword.trim()) {
+        newErrors.confirmPassword = "Please confirm your password.";
+        hasError = true;
+      } else if (password !== confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match.";
+        hasError = true;
+      }
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required.";
+      hasError = true;
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required.";
+      hasError = true;
+    }
+
+    if (hasError) {
+      setErrors(newErrors);
       return;
     }
 
-    if (isSignUp) {
-      if (!firstName.trim() || !lastName.trim()) {
-        setError("First and Last Name are required.");
-        return;
-      }
-
-      if (!phoneNumber.trim() || phoneNumber.length < 7) {
-        setError("Phone number is required.");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setError("Passwords do not match. Try again!");
-        return;
-      }
-
-      try {
+    try {
+      if (isSignUp) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const userId = userCredential.user.uid;
 
@@ -57,32 +96,38 @@ export default function AuthPage() {
           lastName,
           phoneNumber,
           email,
-          password, 
+          password,
         };
 
         await setDoc(doc(db, "users", userId), userDetails);
 
         setSuccessMessage(`Account created successfully! Welcome, ${firstName} ${lastName}! 🎉`);
-      } catch (err) {
-        setError("An error occurred during sign up. Please try again.");
-      }
-    } else {
-      try {
+      } else {
         await signInWithEmailAndPassword(auth, email, password);
         setSuccessMessage("Logged in successfully! 🎉");
         navigation.navigate("home");
-      } catch (err) {
-        setError("Login failed. Please check your credentials.");
       }
+
+      setErrors({
+        firstName: "",
+        lastName: "",
+        phoneNumber: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        general: "",
+      });
+    } catch (err) {
+      setErrors({ ...newErrors, general: isSignUp ? "An error occurred during sign up. Please try again." : "Login failed. Please check your credentials." });
     }
   };
 
   const handleForgotPassword = async () => {
-    setError("");
+    setErrors({ ...errors, general: "" });
     setSuccessMessage("");
 
     if (!email.trim()) {
-      setError("Please enter your email to reset password.");
+      setErrors({ ...errors, email: "Please enter your email to reset password." });
       return;
     }
 
@@ -90,12 +135,12 @@ export default function AuthPage() {
       await sendPasswordResetEmail(auth, email);
       setSuccessMessage("Password reset email sent! Check your inbox.");
     } catch (err) {
-      setError("Failed to send reset email. Please check your email and try again.");
+      setErrors({ ...errors, general: "Failed to send reset email. Please check your email and try again." });
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setError("");
+    setErrors({ ...errors, general: "" });
     setSuccessMessage("");
 
     try {
@@ -104,33 +149,28 @@ export default function AuthPage() {
       setSuccessMessage("Logged in with Google successfully! 🎉");
       navigation.navigate("home");
     } catch (err) {
-      setError("Google Sign-In failed. Try again.");
+      setErrors({ ...errors, general: "Google Sign-In failed. Try again." });
     }
   };
 
-
-
   return (
+    <ScrollView>
     <View style={styles.container}>
+    
       <View style={styles.box}>
         <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {errors.general ? <Text style={styles.error}>{errors.general}</Text> : null}
         {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
 
         {isSignUp && (
           <>
-            <TextInput
-              style={styles.input}
-              placeholder="First Name"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Last Name"
-              value={lastName}
-              onChangeText={setLastName}
-            />
+            {errors.firstName ? <Text style={styles.error}>{errors.firstName}</Text> : null}
+            <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
+
+            {errors.lastName ? <Text style={styles.error}>{errors.lastName}</Text> : null}
+            <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
+
+            {errors.phoneNumber ? <Text style={styles.error}>{errors.phoneNumber}</Text> : null}
             <TextInput
               style={styles.input}
               placeholder="Phone Number"
@@ -141,6 +181,7 @@ export default function AuthPage() {
           </>
         )}
 
+        {errors.email ? <Text style={styles.error}>{errors.email}</Text> : null}
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -149,6 +190,8 @@ export default function AuthPage() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
+
+        {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -158,13 +201,16 @@ export default function AuthPage() {
         />
 
         {isSignUp && (
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
+          <>
+            {errors.confirmPassword ? <Text style={styles.error}>{errors.confirmPassword}</Text> : null}
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+            />
+          </>
         )}
 
         {!isSignUp && (
@@ -177,7 +223,6 @@ export default function AuthPage() {
           <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
         </TouchableOpacity>
 
-        {/* Google Sign-In Button */}
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
           <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
           <Text style={styles.buttonText}>Sign in with Google</Text>
@@ -186,7 +231,15 @@ export default function AuthPage() {
         <TouchableOpacity
           onPress={() => {
             setIsSignUp(!isSignUp);
-            setError("");
+            setErrors({
+              firstName: "",
+              lastName: "",
+              phoneNumber: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
+              general: "",
+            });
             setSuccessMessage("");
           }}
         >
@@ -196,6 +249,7 @@ export default function AuthPage() {
         </TouchableOpacity>
       </View>
     </View>
+    </ScrollView>
   );
 }
 
@@ -205,9 +259,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#25292e",
     alignItems: "center",
     justifyContent: "center",
+    padding: 20,
   },
   box: {
-    width: 350,
+    width: "100%",
+    maxWidth: 400,
     backgroundColor: "#ffffff",
     padding: 20,
     borderRadius: 12,
@@ -222,10 +278,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     marginBottom: 10,
+    textAlign: "center",
   },
   error: {
     color: "red",
-    marginBottom: 10,
+    marginBottom: 5,
+    alignSelf: "flex-start",
   },
   success: {
     color: "green",

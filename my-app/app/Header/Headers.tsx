@@ -19,9 +19,9 @@ const Header = () => {
         <Text style={styles.link}>Contact Us</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("index")}>
+      {/* <TouchableOpacity onPress={() => navigation.navigate("index")}>
         <Text style={styles.link}>SignUp - in</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
