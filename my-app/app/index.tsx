@@ -31,12 +31,14 @@ export default function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>();
 
+
   const phoneRegex = /^(050|052|054|056|057|058)-\d{3}-\d{4}$/;
-
   const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
-  const emailSignUp = isSignUp ? "Create an Account" : null;
+  
+  const signIn = isSignUp ? "Sign In" : null;
 
-  const nameRegex = /^[a-zA-Z0-9_+-]$/;
+  const nameRegex = /^[a-zA-Z0-9_+-]{6,}$/;
+  const passwordRegex = /^[a-zA-Z0-9_!@#$%^&*()\-+=]{8,}$/;
 
 
   const handleSubmit = async () => {
@@ -52,22 +54,55 @@ export default function AuthPage() {
     let hasError = false;
     setSuccessMessage("");
 
+    
+
     if (isSignUp) {
+      // First Name
       if (!firstName.trim()) {
         newErrors.firstName = "First name is required.";
         hasError = true;
+      } else if (!nameRegex.test(firstName)) {
+        newErrors.firstName = "At least 6 valid characters: letters, numbers, _ + -";
+        hasError = true;
       }
+    
+      // Last Name
       if (!lastName.trim()) {
         newErrors.lastName = "Last name is required.";
         hasError = true;
+      } else if (!nameRegex.test(lastName)) {
+        newErrors.lastName = "At least 6 valid characters: letters, numbers, _ + -";
+        hasError = true;
       }
+    
+      // Phone Number
       if (!phoneNumber.trim()) {
         newErrors.phoneNumber = "Phone number is required.";
         hasError = true;
       } else if (!phoneRegex.test(phoneNumber)) {
-        newErrors.phoneNumber = "Phone number must be in this format: xxx-xxx-xxxx.";
+        newErrors.phoneNumber = "Use this format: 050-123-4567 (starts with 050, 052, 054, 056, 057, or 058)";
         hasError = true;
       }
+    
+      // Email
+      if (!email.trim()) {
+        newErrors.email = "Email is required.";
+        hasError = true;
+      } else if (!emailRegex.test(email)) {
+        newErrors.email = "Use a valid email abced@(gmail, yahoo, outlook).com";
+        hasError = true;
+      }
+    
+      // Password
+      if (!password.trim()) {
+        newErrors.password = "Password is required.";
+        hasError = true;
+      } else if (!passwordRegex.test(password)) {
+        newErrors.password = "Minimum 8 characters. Only letters, numbers, and symbols _!@#$%^&*()-+=";
+        hasError = true;
+      }
+    
+      // Confirm Password
       if (!confirmPassword.trim()) {
         newErrors.confirmPassword = "Please confirm your password.";
         hasError = true;
@@ -76,25 +111,21 @@ export default function AuthPage() {
         hasError = true;
       }
     }
-    if (emailSignUp)
-    {
-      if (!emailRegex.test(email))
+    
+    if (signIn && email == "" && password == "")
       {
-        newErrors.email = "Please use this format: abcdefj@gmail|yahoo|outlook.com";
-        hasError = true;
+        if (!email.trim() ) {
+          newErrors.email = "Email is required.";
+          hasError = true;
+        }
+    
+        if (!password.trim()) {
+          newErrors.password = "Password is required.";
+          hasError = true;
+        }
       }
-    }
 
-    if (!email.trim() ) {
-      newErrors.email = "Email is required.";
-      hasError = true;
-    }
-
-    if (!password.trim()) {
-      newErrors.password = "Password is required.";
-      hasError = true;
-    }
-
+    
     if (hasError) {
       setErrors(newErrors);
       return;
@@ -116,6 +147,8 @@ export default function AuthPage() {
         await setDoc(doc(db, "users", userId), userDetails);
 
         setSuccessMessage(`Account created successfully! Welcome, ${firstName} ${lastName}! 🎉`);
+        setIsSignUp(false); // last stop here
+
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         setSuccessMessage("Logged in successfully! 🎉");
@@ -168,8 +201,13 @@ export default function AuthPage() {
   };
 
   return (
-    <ScrollView style={styles.scrollViewB}>
+    
     <View style={styles.container}>
+      <ScrollView
+      style={styles.scrollViewB}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
     
       <View style={styles.box}>
         <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
@@ -262,8 +300,8 @@ export default function AuthPage() {
           </Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
     </View>
-    </ScrollView>
   );
 }
 
@@ -271,12 +309,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#25292e",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
   },
-  scrollViewB:{
-    backgroundColor: "#25292e",
+  
+  scrollViewB: {
+    flex: 1,
+  },
+  
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   box: {
     width: "100%",
