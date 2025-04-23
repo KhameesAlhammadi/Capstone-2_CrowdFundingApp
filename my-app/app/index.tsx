@@ -31,7 +31,13 @@ export default function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>();
 
-  const phoneRegex = /^[0-9]{0,10}$/;
+  const phoneRegex = /^(050|052|054|056|057|058)-\d{3}-\d{4}$/;
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
+  const emailSignUp = isSignUp ? "Create an Account" : null;
+
+  const nameRegex = /^[a-zA-Z0-9_+-]$/;
+
 
   const handleSubmit = async () => {
     let newErrors: any = {
@@ -59,7 +65,7 @@ export default function AuthPage() {
         newErrors.phoneNumber = "Phone number is required.";
         hasError = true;
       } else if (!phoneRegex.test(phoneNumber)) {
-        newErrors.phoneNumber = "Phone number must be up to 10 digits.";
+        newErrors.phoneNumber = "Phone number must be in this format: xxx-xxx-xxxx.";
         hasError = true;
       }
       if (!confirmPassword.trim()) {
@@ -70,8 +76,16 @@ export default function AuthPage() {
         hasError = true;
       }
     }
+    if (emailSignUp)
+    {
+      if (!emailRegex.test(email))
+      {
+        newErrors.email = "Please use this format: abcdefj@gmail|yahoo|outlook.com";
+        hasError = true;
+      }
+    }
 
-    if (!email.trim()) {
+    if (!email.trim() ) {
       newErrors.email = "Email is required.";
       hasError = true;
     }
@@ -154,7 +168,7 @@ export default function AuthPage() {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.scrollViewB}>
     <View style={styles.container}>
     
       <View style={styles.box}>
@@ -260,6 +274,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+  },
+  scrollViewB:{
+    backgroundColor: "#25292e",
   },
   box: {
     width: "100%",
