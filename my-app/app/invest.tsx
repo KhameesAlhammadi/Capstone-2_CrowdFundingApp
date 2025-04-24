@@ -166,6 +166,7 @@ export default function InvestPage() {
               <Text style={styles.adjustText}>-</Text>
             </TouchableOpacity>
 
+<View>
             <TextInput
           style={styles.amountText}
           value={investmentAmount}
@@ -188,15 +189,9 @@ export default function InvestPage() {
           placeholder="0"
           keyboardType="numeric"
           />
+          <Text style={styles.TextCurr}>AED</Text>
           
-          
-          
-          
-          
-          
-          
-
-
+          </View>
             <TouchableOpacity style={styles.adjustButton} onPress={handleIncrease}>
               <Text style={styles.adjustText}>+</Text>
             </TouchableOpacity>
@@ -307,6 +302,10 @@ const styles = StyleSheet.create({
     textAlign:"center",
     fontSize: 20,
     fontWeight: "bold",
+  },
+  TextCurr:{
+  textAlign:"center"
+  
   },
   investButton: {
     backgroundColor: "#4caf50",

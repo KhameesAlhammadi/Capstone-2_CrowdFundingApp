@@ -124,10 +124,24 @@ export default function Properties() {
       setUploading(false);
     }
   };
+
+
+
+
   return (
     <View style={{ flex: 1 }}>
       <Header />
+      <ScrollView
+                  style={{ flex: 1 }}
+                  contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: "space-between",
+                    paddingBottom: 50,
+                  }}
+                >
       <View style={styles.container}>
+        
+      
         <StatusBar barStyle="dark-content" />
         <Text style={styles.header}>Explore Properties</Text>
 
@@ -159,115 +173,127 @@ export default function Properties() {
             </View>
           )}
         />
+        </View>
+        </ScrollView>
 
         <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
           <AntDesign name="plus" size={30} color="#fff" />
         </TouchableOpacity>
 
         <Modal visible={modalVisible} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Add Property</Text>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+        <Text style={styles.modalTitle}>Add Property</Text>
 
-              <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, errors.image && styles.invalid]}>
-                {image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> :
-                  <Text style={styles.imagePlaceholderText}>Tap to upload image</Text>}
-              </TouchableOpacity>
-              {errors.image && <Text style={styles.error}>{errors.image}</Text>}
+        <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, errors.image && styles.invalid]}>
+          {image ? (
+            <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} />
+          ) : (
+            <Text style={styles.imagePlaceholderText}>Tap to upload image</Text>
+          )}
+        </TouchableOpacity>
+        {errors.image && <Text style={styles.error}>{errors.image}</Text>}
 
-              <TextInput
-                placeholder="Property Name"
-                value={propertyName}
-                onChangeText={(val) => handleInputChange('propertyName', val)}
-                style={[styles.input, errors.propertyName && styles.invalid]}
-              />
-              {errors.propertyName && <Text style={styles.error}>{errors.propertyName}</Text>}
+        <TextInput
+          placeholder="Property Name"
+          value={propertyName}
+          onChangeText={(val) => handleInputChange('propertyName', val)}
+          style={[styles.input, errors.propertyName && styles.invalid]}
+        />
+        {errors.propertyName && <Text style={styles.error}>{errors.propertyName}</Text>}
 
-              <TextInput
-                placeholder="Description"
-                value={description}
-                onChangeText={(val) => handleInputChange('description', val)}
-                style={[styles.input, errors.description && styles.invalid]}
-              />
-              {errors.description && <Text style={styles.error}>{errors.description}</Text>}
+        <TextInput
+          placeholder="Description"
+          value={description}
+          onChangeText={(val) => handleInputChange('description', val)}
+          style={[styles.input, errors.description && styles.invalid]}
+        />
+        {errors.description && <Text style={styles.error}>{errors.description}</Text>}
 
-              <View style={styles.rowContainer}>
-                <TextInput
-                  placeholder="Rooms"
-                  value={rooms}
-                  onChangeText={(val) => handleInputChange('rooms', val)}
-                  style={[styles.smallInput, errors.rooms && styles.invalid]}
-                  keyboardType="numeric"
-                />
-                <TextInput
-                  placeholder="Price (AED)"
-                  value={price}
-                  onChangeText={(val) => handleInputChange('price', val)}
-                  style={[styles.smallInput, errors.price && styles.invalid]}
-                  keyboardType="numeric"
-                />
-              </View>
-              {errors.rooms && <Text style={styles.error}>{errors.rooms}</Text>}
-              {errors.price && <Text style={styles.error}>{errors.price}</Text>}
+        <View style={styles.rowContainer}>
+          <TextInput
+            placeholder="Rooms"
+            value={rooms}
+            onChangeText={(val) => handleInputChange('rooms', val)}
+            style={[styles.smallInput, errors.rooms && styles.invalid]}
+            keyboardType="numeric"
+          />
+          <TextInput
+            placeholder="Price (AED)"
+            value={price}
+            onChangeText={(val) => handleInputChange('price', val)}
+            style={[styles.smallInput, errors.price && styles.invalid]}
+            keyboardType="numeric"
+          />
+        </View>
+        {errors.rooms && <Text style={styles.error}>{errors.rooms}</Text>}
+        {errors.price && <Text style={styles.error}>{errors.price}</Text>}
 
-              <Picker
-                selectedValue={propertyType}
-                onValueChange={(val) => handleInputChange('propertyType', val)}
-                style={[styles.input, errors.propertyType && styles.invalid]}>
-                <Picker.Item label="Select Property Type" value="" />
-                <Picker.Item label="Villa" value="Villa" />
-                <Picker.Item label="Apartment" value="Apartment" />
-              </Picker>
-              {errors.propertyType && <Text style={styles.error}>{errors.propertyType}</Text>}
+        <Picker
+          selectedValue={propertyType}
+          onValueChange={(val) => handleInputChange('propertyType', val)}
+          style={[styles.input, errors.propertyType && styles.invalid]}
+        >
+          <Picker.Item label="Select Property Type" value="" />
+          <Picker.Item label="Villa" value="Villa" />
+          <Picker.Item label="Apartment" value="Apartment" />
+        </Picker>
+        {errors.propertyType && <Text style={styles.error}>{errors.propertyType}</Text>}
 
-              <Picker
-                selectedValue={city}
-                onValueChange={(val) => handleInputChange('city', val)}
-                style={[styles.input, errors.city && styles.invalid]}>
-                <Picker.Item label="Select City" value="" />
-                <Picker.Item label="Abu Dhabi" value="Abu Dhabi" />
-                <Picker.Item label="Dubai" value="Dubai" />
-              </Picker>
-              {errors.city && <Text style={styles.error}>{errors.city}</Text>}
+        <Picker
+          selectedValue={city}
+          onValueChange={(val) => handleInputChange('city', val)}
+          style={[styles.input, errors.city && styles.invalid]}
+        >
+          <Picker.Item label="Select City" value="" />
+          <Picker.Item label="Abu Dhabi" value="Abu Dhabi" />
+          <Picker.Item label="Dubai" value="Dubai" />
+        </Picker>
+        {errors.city && <Text style={styles.error}>{errors.city}</Text>}
 
-              {city === 'Abu Dhabi' && (
-                <>
-                  <Picker
-                    selectedValue={specificArea}
-                    onValueChange={(val) => handleInputChange('specificArea', val)}
-                    style={[styles.input, errors.specificArea && styles.invalid]}>
-                    <Picker.Item label="Select Area" value="" />
-                    <Picker.Item label="Al Reem Island" value="Al Reem Island" />
-                    <Picker.Item label="Saadiyat Island" value="Saadiyat Island" />
-                    <Picker.Item label="Al Raha Beach" value="Al Raha Beach" />
-                    <Picker.Item label="Al Reef" value="Al Reef" />
-                    <Picker.Item label="Khalifa City" value="Khalifa City" />
-                    <Picker.Item label="Yas Island" value="Yas Island" />
-                  </Picker>
-                  {errors.specificArea && <Text style={styles.error}>{errors.specificArea}</Text>}
-                </>
-              )}
+        {city === 'Abu Dhabi' && (
+          <>
+            <Picker
+              selectedValue={specificArea}
+              onValueChange={(val) => handleInputChange('specificArea', val)}
+              style={[styles.input, errors.specificArea && styles.invalid]}
+            >
+              <Picker.Item label="Select Area" value="" />
+              <Picker.Item label="Al Reem Island" value="Al Reem Island" />
+              <Picker.Item label="Saadiyat Island" value="Saadiyat Island" />
+              <Picker.Item label="Al Raha Beach" value="Al Raha Beach" />
+              <Picker.Item label="Al Reef" value="Al Reef" />
+              <Picker.Item label="Khalifa City" value="Khalifa City" />
+              <Picker.Item label="Yas Island" value="Yas Island" />
+            </Picker>
+            {errors.specificArea && <Text style={styles.error}>{errors.specificArea}</Text>}
+          </>
+        )}
 
-              <TouchableOpacity
-                style={[styles.submitButton, !isFormValid && { backgroundColor: '#999' }]}
-                onPress={validateAndSubmit}
-                disabled={!isFormValid}
-              >
-                <Text style={styles.submitButtonText}>{uploading ? 'Uploading...' : 'Submit'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={styles.cancelButton}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      </View>
+        <TouchableOpacity
+          style={[styles.submitButton, !isFormValid && { backgroundColor: '#999' }]}
+          onPress={validateAndSubmit}
+          disabled={!isFormValid}
+        >
+          <Text style={styles.submitButtonText}>{uploading ? 'Uploading...' : 'Submit'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setModalVisible(false)}>
+          <Text style={styles.cancelButton}>Cancel</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
+  </View>
+</Modal>
+
+        
+      </View>
+    
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 16, paddingTop: 40 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 40,  position: 'relative', },
   header: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1a1a1a' },
   propertyList: { paddingBottom: 100 },
   card: {
@@ -287,8 +313,18 @@ const styles = StyleSheet.create({
   price: { fontSize: 13, fontWeight: 'bold', color: '#27ae60' },
   progressLabel: { fontSize: 10, color: '#999', marginTop: 4 },
   addButton: {
-    position: 'absolute', bottom: 30, right: 20, backgroundColor: '#007bff',
-    width: 55, height: 55, borderRadius: 30, justifyContent: 'center', alignItems: 'center'
+    position: 'absolute',
+  bottom: 20,
+  right: 20,
+  backgroundColor: '#2196F3',
+  borderRadius: 30,
+  padding: 15,
+  elevation: 5, // for Android shadow
+  shadowColor: '#000', // for iOS shadow
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  zIndex:100,
   },
   modalOverlay: {
     flex: 1,
