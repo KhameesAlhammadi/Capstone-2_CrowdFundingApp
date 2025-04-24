@@ -1,32 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import * as Progress from 'react-native-progress';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Text,
-  View,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  FlatList,
-  ActivityIndicator,
-  StatusBar,
+  Text, View, FlatList, TouchableOpacity, Image, StatusBar,
+  StyleSheet, useWindowDimensions, Modal, TextInput, ScrollView
 } from 'react-native';
+import * as Progress from 'react-native-progress';
 import * as ImagePicker from 'expo-image-picker';
-import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage, auth, db } from '../../firebaseconfig/firebase';
-import { Picker } from '@react-native-picker/picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AntDesign } from '@expo/vector-icons';
-
+import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native';
+import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../firebaseconfig/firebase';
 import Header from '../Header/Headers';
 
-// const db = getFirestore(firebaseApp);
-// const storage = getStorage(firebaseApp);
-
-export default function PropertiesScreen() {
+export default function Properties() {
+  const [properties, setProperties] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState(null);
   const [propertyName, setPropertyName] = useState('');
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('');
@@ -35,319 +26,299 @@ export default function PropertiesScreen() {
   const [price, setPrice] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [properties, setProperties] = useState<any[]>([]);
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const navigation = useNavigation();
+  const scrollRef = useRef();
+  const { width } = useWindowDimensions();
+  const cardSize = width > 768 ? 200 : 160;
+  const numCols = Math.floor(width / (cardSize + 20));
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'properties'), (snapshot) => {
+    const unsub = onSnapshot(collection(db, 'properties'), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProperties(data);
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
+
+  useEffect(() => {
+    const filled =
+      image && propertyName && description && city &&
+      (city !== 'Abu Dhabi' || specificArea) &&
+      rooms && !isNaN(rooms) &&
+      price && !isNaN(price) &&
+      propertyType;
+    const hasErrors = Object.values(errors).some(x => x);
+    setIsFormValid(filled && !hasErrors);
+  }, [image, propertyName, description, city, specificArea, rooms, price, propertyType, errors]);
+
+  const handleInputChange = (field, value) => {
+    if ((field === 'rooms' || field === 'price') && isNaN(value)) return;
+
+    const setters = {
+      propertyName: setPropertyName,
+      description: setDescription,
+      city: setCity,
+      specificArea: setSpecificArea,
+      rooms: setRooms,
+      price: setPrice,
+      propertyType: setPropertyType
+    };
+
+    setters[field](value);
+    setErrors(prev => ({ ...prev, [field]: '' }));
+  };
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync();
     if (!result.canceled) setImage(result.assets[0].uri);
+    setErrors(prev => ({ ...prev, image: '' }));
   };
 
-  const uploadProperty = async () => {
-    if (!image || !propertyName || !city || !rooms || !price || !propertyType) {
-      alert('All fields are required!');
-      return;
-    }
+  const scrollToError = () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  const validateAndSubmit = async () => {
+    let err = {};
+    if (!image) err.image = 'Image is required.';
+    if (!propertyName) err.propertyName = 'Property name is required.';
+    if (!description) err.description = 'Description is required.';
+    if (!city) err.city = 'City is required.';
+    if (city === 'Abu Dhabi' && !specificArea) err.specificArea = 'Area is required.';
+    if (!rooms || isNaN(rooms)) err.rooms = 'Valid room count required.';
+    if (!price || isNaN(price)) err.price = 'Valid price required.';
+    if (!propertyType) err.propertyType = 'Property type is required.';
+
+    setErrors(err);
+    if (Object.keys(err).length > 0) return scrollToError();
 
     setUploading(true);
     try {
-      const imageRef = ref(storage, `images/${Date.now()}`);
-      const response = await fetch(image);
-      const blob = await response.blob();
-      await uploadBytes(imageRef, blob);
-      const imageUrl = await getDownloadURL(imageRef);
+      const refImg = ref(storage, `images/${Date.now()}`);
+      const blob = await (await fetch(image)).blob();
+      await uploadBytes(refImg, blob);
+      const imageUrl = await getDownloadURL(refImg);
 
-      const newProperty = {
+      await addDoc(collection(db, 'properties'), {
         property_name: propertyName,
         description,
         city,
-        location: city === "Abu Dhabi" ? specificArea : city, // Stores specific area for Abu Dhabi, city for Dubai
+        location: city === 'Abu Dhabi' ? specificArea : city,
         rooms: parseInt(rooms),
         price: parseFloat(price),
         imageUrl,
         type: propertyType,
-      };
+        tag: 'Available'
+      });
 
-      await addDoc(collection(db, 'properties'), newProperty);
-
-      setPropertyName('');
-      setDescription('');
-      setCity('');
-      setSpecificArea('');
-      setRooms('');
-      setPrice('');
-      setImage(null);
-      setPropertyType('');
       setModalVisible(false);
-    } catch (error) {
-      console.error('Error uploading:', error);
+      setImage(null); setPropertyName(''); setDescription('');
+      setCity(''); setSpecificArea(''); setRooms(''); setPrice('');
+      setPropertyType(''); setErrors({});
+    } catch (e) {
       alert('Upload failed!');
     } finally {
       setUploading(false);
     }
   };
-
   return (
     <View style={{ flex: 1 }}>
-      {/* Sticky header outside scroll view */}
       <Header />
-    <View style={styles.container}>
-      
-      <StatusBar barStyle="dark-content" />
-      <Text style={styles.header}>Properties</Text>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <Text style={styles.header}>Explore Properties</Text>
 
-      <FlatList
-  data={properties}
-  keyExtractor={(item) => item.id}
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={styles.propertyList}
-  renderItem={({ item }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("invest", { property: item })}
-      style={styles.propertyContainer}
-    >
-      <Image source={{ uri: item.imageUrl }} style={styles.propertyImage} />
-      <Text style={styles.propertyTitle}>{item.property_name}</Text>
-      <Text style={styles.propertyLocation}>{item.location}</Text>
-      <Text style={styles.propertyRooms}>{item.rooms}</Text>
-      <Text style={styles.propertyPrice}>{item.price} AED</Text>
-  
-      <Progress.Bar
-        progress={0.5} 
-        width={150}
-        color="#2196f3"
-        style={{ marginTop: 8 }}
-      />
-    </TouchableOpacity>
-  )}
-  
-/>
+        <FlatList
+          key={numCols}
+          data={properties}
+          keyExtractor={(item) => item.id}
+          numColumns={numCols}
+          contentContainerStyle={styles.propertyList}
+          columnWrapperStyle={numCols > 1 ? { justifyContent: 'center' } : undefined}
+          renderItem={({ item }) => (
+            <View style={[styles.card, { width: cardSize, height: cardSize + 110 }]}>
+              <TouchableOpacity onPress={() => navigation.navigate("invest", { property: item })}>
+                <View style={[styles.imageWrapper, { height: cardSize }]}>
+                  <Image source={{ uri: item.imageUrl }} style={styles.image} />
+                  <View style={styles.badge}><Text style={styles.badgeText}>{item.tag || 'Available'}</Text></View>
+                  <TouchableOpacity style={styles.heart}>
+                    <AntDesign name="hearto" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.cardBody}>
+                  <Text style={styles.title}>{item.property_name}</Text>
+                  <Text style={styles.location}>{item.location}</Text>
+                  <Text style={styles.price}>{item.price} AED</Text>
+                  <Progress.Bar progress={0.5} width="100%" color="#27ae60" height={6} borderWidth={0} />
+                  <Text style={styles.progressLabel}>50% funded</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
 
+        <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+          <AntDesign name="plus" size={30} color="#fff" />
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-        <AntDesign name="plus" size={30} color="white" />
-      </TouchableOpacity>
+        <Modal visible={modalVisible} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Add Property</Text>
 
-      <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Add Property</Text>
+              <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, errors.image && styles.invalid]}>
+                {image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> :
+                  <Text style={styles.imagePlaceholderText}>Tap to upload image</Text>}
+              </TouchableOpacity>
+              {errors.image && <Text style={styles.error}>{errors.image}</Text>}
 
-            {/* Image Upload */}
-            <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
-              {image ? (
-                <Image source={{ uri: image }} style={styles.propertyImage} />
-              ) : (
-                <Text style={styles.imagePlaceholderText}>Tap to upload image</Text>
-              )}
-            </TouchableOpacity>
+              <TextInput
+                placeholder="Property Name"
+                value={propertyName}
+                onChangeText={(val) => handleInputChange('propertyName', val)}
+                style={[styles.input, errors.propertyName && styles.invalid]}
+              />
+              {errors.propertyName && <Text style={styles.error}>{errors.propertyName}</Text>}
 
-            <View style={styles.formContainer}>
-              {/* Property Name & Description */}
-              <TextInput placeholder="Property Name" style={styles.input} value={propertyName} onChangeText={setPropertyName} />
-              <TextInput placeholder="Description" style={styles.input} value={description} onChangeText={setDescription} />
+              <TextInput
+                placeholder="Description"
+                value={description}
+                onChangeText={(val) => handleInputChange('description', val)}
+                style={[styles.input, errors.description && styles.invalid]}
+              />
+              {errors.description && <Text style={styles.error}>{errors.description}</Text>}
 
-              {/* Rooms & Price in a Row */}
               <View style={styles.rowContainer}>
-                <TextInput placeholder="Rooms" style={styles.smallInput} value={rooms} onChangeText={setRooms} keyboardType="numeric"/>
-                <TextInput placeholder="Price (AED)" style={styles.smallInput} value={price} onChangeText={setPrice} keyboardType="numeric"/>
+                <TextInput
+                  placeholder="Rooms"
+                  value={rooms}
+                  onChangeText={(val) => handleInputChange('rooms', val)}
+                  style={[styles.smallInput, errors.rooms && styles.invalid]}
+                  keyboardType="numeric"
+                />
+                <TextInput
+                  placeholder="Price (AED)"
+                  value={price}
+                  onChangeText={(val) => handleInputChange('price', val)}
+                  style={[styles.smallInput, errors.price && styles.invalid]}
+                  keyboardType="numeric"
+                />
               </View>
+              {errors.rooms && <Text style={styles.error}>{errors.rooms}</Text>}
+              {errors.price && <Text style={styles.error}>{errors.price}</Text>}
 
-              {/* Property Type Dropdown */}
-              <Picker selectedValue={propertyType} onValueChange={setPropertyType} style={styles.picker}>
+              <Picker
+                selectedValue={propertyType}
+                onValueChange={(val) => handleInputChange('propertyType', val)}
+                style={[styles.input, errors.propertyType && styles.invalid]}>
                 <Picker.Item label="Select Property Type" value="" />
                 <Picker.Item label="Villa" value="Villa" />
                 <Picker.Item label="Apartment" value="Apartment" />
               </Picker>
+              {errors.propertyType && <Text style={styles.error}>{errors.propertyType}</Text>}
 
-              {/* City Dropdown */}
-              <Picker selectedValue={city} onValueChange={(itemValue) => { setCity(itemValue); setSpecificArea(''); }} style={styles.picker}>
+              <Picker
+                selectedValue={city}
+                onValueChange={(val) => handleInputChange('city', val)}
+                style={[styles.input, errors.city && styles.invalid]}>
                 <Picker.Item label="Select City" value="" />
                 <Picker.Item label="Abu Dhabi" value="Abu Dhabi" />
                 <Picker.Item label="Dubai" value="Dubai" />
               </Picker>
+              {errors.city && <Text style={styles.error}>{errors.city}</Text>}
 
-              {/* Specific Area Dropdown */}
-              {city === "Abu Dhabi" && (
-                <Picker selectedValue={specificArea} onValueChange={setSpecificArea} style={styles.picker}>
-                  <Picker.Item label="Select Area" value="" />
-                  <Picker.Item label="Al Reem Island" value="Al Reem Island" />
-                  <Picker.Item label="Saadiyat Island" value="Saadiyat Island" />
-                  <Picker.Item label="Al Raha Beach" value="Al Raha Beach" />
-                  <Picker.Item label="Al Reef" value="Al Reef" />
-                  <Picker.Item label="Khalifa City" value="Khalifa City" />
-                  <Picker.Item label="Yas Island" value="Yas Island" />
-                </Picker>
+              {city === 'Abu Dhabi' && (
+                <>
+                  <Picker
+                    selectedValue={specificArea}
+                    onValueChange={(val) => handleInputChange('specificArea', val)}
+                    style={[styles.input, errors.specificArea && styles.invalid]}>
+                    <Picker.Item label="Select Area" value="" />
+                    <Picker.Item label="Al Reem Island" value="Al Reem Island" />
+                    <Picker.Item label="Saadiyat Island" value="Saadiyat Island" />
+                    <Picker.Item label="Al Raha Beach" value="Al Raha Beach" />
+                    <Picker.Item label="Al Reef" value="Al Reef" />
+                    <Picker.Item label="Khalifa City" value="Khalifa City" />
+                    <Picker.Item label="Yas Island" value="Yas Island" />
+                  </Picker>
+                  {errors.specificArea && <Text style={styles.error}>{errors.specificArea}</Text>}
+                </>
               )}
+
+              <TouchableOpacity
+                style={[styles.submitButton, !isFormValid && { backgroundColor: '#999' }]}
+                onPress={validateAndSubmit}
+                disabled={!isFormValid}
+              >
+                <Text style={styles.submitButtonText}>{uploading ? 'Uploading...' : 'Submit'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Text style={styles.cancelButton}>Cancel</Text>
+              </TouchableOpacity>
             </View>
-
-            <TouchableOpacity style={styles.submitButton} onPress={uploadProperty}>
-              <Text style={styles.submitButtonText}>Submit</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <Text style={styles.cancelButton}>Cancel</Text>
-            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
     </View>
   );
 }
 
-const styles = {
-  container: { flex: 1, backgroundColor: '#fff', paddingTop: 50, alignItems: 'center' },
-  header: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 15 },
-  propertyList: { paddingHorizontal: 10, alignItems: 'center'},
-  propertyContainer: { marginRight: 15, alignItems: 'center', backgroundColor: '#f9f9f9', padding: 10, borderRadius: 8 },
-  propertyImage: { width: 150, height: 150, borderRadius: 5 },
-  propertyTitle: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginTop: 5 },
-  propertyLocation: { fontSize: 12, color: '#666', textAlign: 'center' },
-  propertyRooms: { fontSize: 12, fontWeight: 'bold', color: '#555', textAlign: 'center' },
-  propertyPrice: { fontSize: 14, fontWeight: 'bold', color: '#28a745', textAlign: 'center' },
-  addButton: { position: 'absolute', bottom: 20, right: 20, backgroundColor: '#007bff', width: 55, height: 55, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
-
-
+const styles = StyleSheet.create({
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 40 },
+  header: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20, color: '#1a1a1a' },
+  propertyList: { paddingBottom: 100 },
+  card: {
+    backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden',
+    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 6,
+    margin:8,
+    shadowOffset: { width: 0, height: 2 }, elevation: 3,
+  },
+  imageWrapper: { width: '100%', overflow: 'hidden', position: 'relative', borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+  image: { width: '100%', height: '100%', resizeMode: 'cover' },
+  badge: { position: 'absolute', top: 8, left: 8, backgroundColor: '#27ae60', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 5 },
+  badgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+  heart: { position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 4 },
+  cardBody: { padding: 10, alignItems: 'center' },
+  title: { fontSize: 14, fontWeight: '600', color: '#1a1a1a', marginBottom: 2, textAlign: 'center' },
+  location: { fontSize: 12, color: '#666', marginBottom: 2 },
+  price: { fontSize: 13, fontWeight: 'bold', color: '#27ae60' },
+  progressLabel: { fontSize: 10, color: '#999', marginTop: 4 },
+  addButton: {
+    position: 'absolute', bottom: 30, right: 20, backgroundColor: '#007bff',
+    width: 55, height: 55, borderRadius: 30, justifyContent: 'center', alignItems: 'center'
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
   modalContainer: {
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 12,
-    width: '90%',
-    maxWidth: 400,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    // marginBottom: 0,
-  },
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    maxHeight: '90%',
+  },  
+  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
   imagePicker: {
-    width: '100%',
-    height: 160,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    width: '100%', height: 150, backgroundColor: '#f1f1f1',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 10,
+    borderRadius: 8, borderWidth: 1, borderColor: '#ccc'
   },
-  imagePlaceholderText: {
-    color: '#888',
-    fontSize: 16,
-  },
-  submitButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 12,
-    borderRadius: 8,
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  cancelButton: {
-    marginTop: 10,
-  },
-  cancelButtonText: {
-    color: 'red',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  dropdownContainer: {
-    width: '100%',
-    marginBottom: 8, // Reduced spacing
-  },
-  
-  dropdownLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 3,
-    color: '#333',
-  },
-  
-  picker: {
-    height: 45, // Reduce height
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    backgroundColor: '#f8f8f8',
-  },
-  
-  pickerItem: {
-    fontSize: 16,
-    color: '#000',
-  },
-  
-  dropdownWrapper: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    overflow: 'hidden',
-  },
-  formContainer: {
-    width: '100%',
-    alignItems: 'center',
-    padding: 10,
-  },
-  
-  inputContainer: {
-    width: '100%',
-    marginBottom: 8, // Less space between fields
-  },
-  
-  input: {
-    width: '100%',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    fontSize: 16,
-    backgroundColor: '#f8f8f8',
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  
-  smallInput: {
-    width: '48%', // Makes the inputs take half the width each
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    fontSize: 16,
-    backgroundColor: '#f8f8f8',
-  },
-  
-  
-};
+  imagePlaceholderText: { color: '#666', fontSize: 14 },
+  input: { width: '100%', padding: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 10 },
+  rowContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '100%' },
+  smallInput: { width: '48%', padding: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 8 },
+  submitButton: { backgroundColor: '#007bff', paddingVertical: 12, borderRadius: 8, width: '100%', alignItems: 'center', marginTop: 10 },
+  submitButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  cancelButton: { marginTop: 10, color: 'red', fontWeight: 'bold', textAlign: 'center' },
+  error: { color: 'red', fontSize: 12, marginTop: -6, marginBottom: 6, alignSelf: 'flex-start' },
+  invalid: { borderColor: 'red' },
+});
