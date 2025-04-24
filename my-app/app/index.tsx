@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth, db } from "../firebaseconfig/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore"; // ✅ added
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,15 +31,11 @@ export default function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>();
 
-
   const phoneRegex = /^(050|052|054|056|057|058)-\d{3}-\d{4}$/;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
-  
   const signIn = isSignUp ? "Sign In" : null;
-
-  const nameRegex = /^[a-zA-Z0-9_+-]{6,}$/;
+  const nameRegex = /^[a-zA-Z]{6,}$/;
   const passwordRegex = /^[a-zA-Z0-9_!@#$%^&*()\-+=]{8,}$/;
-
 
   const handleSubmit = async () => {
     let newErrors: any = {
@@ -54,15 +50,13 @@ export default function AuthPage() {
     let hasError = false;
     setSuccessMessage("");
 
-    
-
     if (isSignUp) {
       // First Name
       if (!firstName.trim()) {
         newErrors.firstName = "First name is required.";
         hasError = true;
       } else if (!nameRegex.test(firstName)) {
-        newErrors.firstName = "At least 6 valid characters: letters, numbers, _ + -";
+        newErrors.firstName = "First name must contain only letters and be at least 3 characters long.";
         hasError = true;
       }
     
@@ -71,7 +65,7 @@ export default function AuthPage() {
         newErrors.lastName = "Last name is required.";
         hasError = true;
       } else if (!nameRegex.test(lastName)) {
-        newErrors.lastName = "At least 6 valid characters: letters, numbers, _ + -";
+        newErrors.lastName = "Last name must contain only letters and be at least 3 characters long.";
         hasError = true;
       }
     
@@ -80,7 +74,7 @@ export default function AuthPage() {
         newErrors.phoneNumber = "Phone number is required.";
         hasError = true;
       } else if (!phoneRegex.test(phoneNumber)) {
-        newErrors.phoneNumber = "Use this format: 050-123-4567 (starts with 050, 052, 054, 056, 057, or 058)";
+        newErrors.phoneNumber = "Phone number must follow the format: 050-123-4567.";
         hasError = true;
       }
     
@@ -89,7 +83,7 @@ export default function AuthPage() {
         newErrors.email = "Email is required.";
         hasError = true;
       } else if (!emailRegex.test(email)) {
-        newErrors.email = "Use a valid email abced@(gmail, yahoo, outlook).com";
+        newErrors.email = "Please enter a valid email (gmail, yahoo, or outlook only).";
         hasError = true;
       }
     
@@ -98,13 +92,13 @@ export default function AuthPage() {
         newErrors.password = "Password is required.";
         hasError = true;
       } else if (!passwordRegex.test(password)) {
-        newErrors.password = "Minimum 8 characters. Only letters, numbers, and symbols _!@#$%^&*()-+=";
+        newErrors.password = "Password must be at least 8 characters and include letters, numbers, or symbols.";
         hasError = true;
       }
     
       // Confirm Password
       if (!confirmPassword.trim()) {
-        newErrors.confirmPassword = "Please confirm your password.";
+        newErrors.confirmPassword = "Confirm password is required.";
         hasError = true;
       } else if (password !== confirmPassword) {
         newErrors.confirmPassword = "Passwords do not match.";
@@ -112,20 +106,19 @@ export default function AuthPage() {
       }
     }
     
-    if (signIn && email == "" && password == "")
-      {
-        if (!email.trim() ) {
-          newErrors.email = "Email is required.";
-          hasError = true;
-        }
-    
-        if (!password.trim()) {
-          newErrors.password = "Password is required.";
-          hasError = true;
-        }
+
+    if (signIn && email === "" && password === "") {
+      if (!email.trim()) {
+        newErrors.email = "Email is required.";
+        hasError = true;
       }
 
-    
+      if (!password.trim()) {
+        newErrors.password = "Password is required.";
+        hasError = true;
+      }
+    }
+
     if (hasError) {
       setErrors(newErrors);
       return;
@@ -133,6 +126,15 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
+        // ✅ Check if the email already exists in Firestore
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const existing = await getDocs(q);
+
+        if (!existing.empty) {
+          setErrors({ ...newErrors, email: "This email is already in use." });
+          return;
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const userId = userCredential.user.uid;
 
@@ -147,8 +149,7 @@ export default function AuthPage() {
         await setDoc(doc(db, "users", userId), userDetails);
 
         setSuccessMessage(`Account created successfully! Welcome, ${firstName} ${lastName}! 🎉`);
-        setIsSignUp(false); // last stop here
-
+        setIsSignUp(false);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         setSuccessMessage("Logged in successfully! 🎉");
@@ -165,7 +166,12 @@ export default function AuthPage() {
         general: "",
       });
     } catch (err) {
-      setErrors({ ...newErrors, general: isSignUp ? "An error occurred during sign up. Please try again." : "Login failed. Please check your credentials." });
+      setErrors({
+        ...newErrors,
+        general: isSignUp
+          ? "An error occurred during sign up. Please try again."
+          : "Login failed. Please check your credentials.",
+      });
     }
   };
 
@@ -201,105 +207,101 @@ export default function AuthPage() {
   };
 
   return (
-    
     <View style={styles.container}>
       <ScrollView
-      style={styles.scrollViewB}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-    >
-    
-      <View style={styles.box}>
-        <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
-        {errors.general ? <Text style={styles.error}>{errors.general}</Text> : null}
-        {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
+        style={styles.scrollViewB}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.box}>
+          <Text style={styles.title}>{isSignUp ? "Create an Account" : "Sign In"}</Text>
+          {errors.general ? <Text style={styles.error}>{errors.general}</Text> : null}
+          {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
 
-        {isSignUp && (
-          <>
-            {errors.firstName ? <Text style={styles.error}>{errors.firstName}</Text> : null}
-            <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
+          {isSignUp && (
+            <>
+              {errors.firstName ? <Text style={styles.error}>{errors.firstName}</Text> : null}
+              <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
+              {errors.lastName ? <Text style={styles.error}>{errors.lastName}</Text> : null}
+              <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
+              {errors.phoneNumber ? <Text style={styles.error}>{errors.phoneNumber}</Text> : null}
+              <TextInput
+                style={styles.input}
+                placeholder="Phone Number"
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
+              />
+            </>
+          )}
 
-            {errors.lastName ? <Text style={styles.error}>{errors.lastName}</Text> : null}
-            <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
+          {errors.email ? <Text style={styles.error}>{errors.email}</Text> : null}
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-            {errors.phoneNumber ? <Text style={styles.error}>{errors.phoneNumber}</Text> : null}
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-            />
-          </>
-        )}
+          {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-        {errors.email ? <Text style={styles.error}>{errors.email}</Text> : null}
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+          {isSignUp && (
+            <>
+              {errors.confirmPassword ? <Text style={styles.error}>{errors.confirmPassword}</Text> : null}
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+              />
+            </>
+          )}
 
-        {errors.password ? <Text style={styles.error}>{errors.password}</Text> : null}
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+          {!isSignUp && (
+            <TouchableOpacity onPress={handleForgotPassword}>
+              <Text style={styles.toggleText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          )}
 
-        {isSignUp && (
-          <>
-            {errors.confirmPassword ? <Text style={styles.error}>{errors.confirmPassword}</Text> : null}
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
-          </>
-        )}
-
-        {!isSignUp && (
-          <TouchableOpacity onPress={handleForgotPassword}>
-            <Text style={styles.toggleText}>Forgot Password?</Text>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
           </TouchableOpacity>
-        )}
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>{isSignUp ? "Sign Up" : "Sign In"}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+            <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
+            <Text style={styles.buttonText}>Sign in with Google</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-          <Image source={require("../assets/images/GoogleLogo.png")} style={styles.googleLogo} />
-          <Text style={styles.buttonText}>Sign in with Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => {
-            setIsSignUp(!isSignUp);
-            setErrors({
-              firstName: "",
-              lastName: "",
-              phoneNumber: "",
-              email: "",
-              password: "",
-              confirmPassword: "",
-              general: "",
-            });
-            setSuccessMessage("");
-          }}
-        >
-          <Text style={styles.toggleText}>
-            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            onPress={() => {
+              setIsSignUp(!isSignUp);
+              setErrors({
+                firstName: "",
+                lastName: "",
+                phoneNumber: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+                general: "",
+              });
+              setSuccessMessage("");
+            }}
+          >
+            <Text style={styles.toggleText}>
+              {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -310,11 +312,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#25292e",
   },
-  
   scrollViewB: {
     flex: 1,
   },
-  
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
@@ -390,5 +390,5 @@ const styles = StyleSheet.create({
     color: "#007bff",
     textDecorationLine: "underline",
     textAlign: "center",
-  },
+  },
 });
