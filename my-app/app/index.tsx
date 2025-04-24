@@ -31,7 +31,7 @@ export default function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>();
 
-  const phoneRegex = /^(050|052|054|056|057|058)-\d{3}-\d{4}$/;
+  const phoneRegex = /^(050|052|054|056|057|058)\d{3}\d{4}$/;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
   const signIn = isSignUp ? "Sign In" : null;
   const nameRegex = /^[a-zA-Z]{3,}$/;
