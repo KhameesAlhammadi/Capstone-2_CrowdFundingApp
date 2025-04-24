@@ -165,7 +165,7 @@ export default function Properties() {
                 <View style={styles.cardBody}>
                   <Text style={styles.title}>{item.property_name}</Text>
                   <Text style={styles.location}>{item.location}</Text>
-                  <Text style={styles.price}>{item.price} AED</Text>
+                  <Text style={styles.price}>{item.price.toLocaleString()} AED</Text>
                   <Progress.Bar progress={0.5} width="100%" color="#27ae60" height={6} borderWidth={0} />
                   <Text style={styles.progressLabel}>50% funded</Text>
                 </View>

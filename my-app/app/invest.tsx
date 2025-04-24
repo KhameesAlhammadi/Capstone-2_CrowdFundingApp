@@ -143,7 +143,7 @@ export default function InvestPage() {
           <View style={styles.cardContent}>
             <Text style={styles.propertyDetails}>{property.rooms} rooms • Ready • 🇦🇪 {property.location} • {property.type}</Text>
             <Text style={styles.propertyTitle}>{property.property_name}</Text>
-            <Text style={styles.propertyPrice}>{property.price} AED</Text>
+            <Text style={styles.propertyPrice}>{property.price.toLocaleString()} AED</Text>
 
             <View style={styles.progressContainer}>
               <Progress.Bar progress={0.45} width={null} color="#4caf50" borderRadius={4} />
@@ -169,7 +169,7 @@ export default function InvestPage() {
 <View>
             <TextInput
           style={styles.amountText}
-          value={investmentAmount}
+          value={investmentAmount.toLocaleString()}
           onChangeText={(text) => {
             // Remove all non-numeric characters
             let normalizedText = text.replace(/[^0-9]/g, '');
