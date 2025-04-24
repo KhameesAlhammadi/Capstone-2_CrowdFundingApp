@@ -200,6 +200,7 @@ export default function Properties() {
           value={propertyName}
           onChangeText={(val) => handleInputChange('propertyName', val)}
           style={[styles.input, errors.propertyName && styles.invalid]}
+          keyboardType=""
         />
         {errors.propertyName && <Text style={styles.error}>{errors.propertyName}</Text>}
 
