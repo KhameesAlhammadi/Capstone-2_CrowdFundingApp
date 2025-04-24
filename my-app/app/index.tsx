@@ -47,7 +47,7 @@ export default function AuthPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Logged in successfully! 🎉");
-        navigation.navigate('Profile'); // Navigate to ProfilePage
+        navigation.navigate('Portfolio'); // Navigate to ProfilePage
       } 
     } catch (err: any) {
       setError("An error occurred. Please try again.");

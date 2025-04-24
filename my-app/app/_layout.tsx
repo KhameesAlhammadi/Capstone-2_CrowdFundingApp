@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AuthPage from "./index";
 import ProfilePage from "./profilePage";
+import Portfolio from "./Portfolio";
 
 const Stack = createNativeStackNavigator();
 
@@ -10,6 +11,7 @@ export default function MyStack() {
     <Stack.Navigator>
       <Stack.Screen name="SignIn" component={AuthPage} />
       <Stack.Screen name="Profile" component={ProfilePage} />
+      <Stack.Screen name="Portfolio" component={Portfolio} />
     </Stack.Navigator>
   );
 }
