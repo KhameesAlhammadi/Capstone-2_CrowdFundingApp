@@ -77,12 +77,12 @@ export default function InvestPage() {
   const handleDecrease = () => {
     const amount = Number(investmentAmount) || 0;
     const newAmount = Math.max(amount - 100, 0); // Prevent negative
-    setInvestmentAmount(String(newAmount));
+    setInvestmentAmount(Number(newAmount));
   };
 
   const handleIncrease = () => {
     const amount = Number(investmentAmount) || 0;
-    setInvestmentAmount(String(amount + 100));
+    setInvestmentAmount(Number(amount + 100));
   };
 
   
@@ -170,24 +170,32 @@ export default function InvestPage() {
           style={styles.amountText}
           value={investmentAmount}
           onChangeText={(text) => {
+            // Remove all non-numeric characters
+            let normalizedText = text.replace(/[^0-9]/g, '');
+          
             // Remove leading zeros unless the input is just "0"
-            let normalizedText = text.replace(/^0+/, '');
-
-            // If the input is empty (after removing leading zeros), reset to "0"
+            if (normalizedText.length > 1 && normalizedText.startsWith('0')) {
+              normalizedText = normalizedText.replace(/^0+/, '');
+            }
+          
+            // If the input is empty after cleaning, reset to '0'
             if (normalizedText === '') {
               normalizedText = '0';
             }
-
-            // Prevent starting or ending with a decimal point
-            if (/^\d*\.?\d*$/.test(normalizedText) && 
-                !(normalizedText.startsWith('.') && normalizedText.length === 1) && 
-                !normalizedText.endsWith('.')) {
-              setInvestmentAmount(normalizedText);
-            }
+          
+            setInvestmentAmount(normalizedText);
           }}
           placeholder="0"
           keyboardType="numeric"
-        />
+          />
+          
+          
+          
+          
+          
+          
+          
+
 
             <TouchableOpacity style={styles.adjustButton} onPress={handleIncrease}>
               <Text style={styles.adjustText}>+</Text>
