@@ -7,6 +7,7 @@ import HomeScreen from "./home";
 import ContactScreen from "./ContactUS";
 import PropertiesScreen from "./(tabs)/Properties";
 import PaymentScreen from "./payment";
+import Dashboard from "./Portfolio";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,7 @@ export default function MyStack()
       <Stack.Screen name="ContactUS" component={ContactScreen} options={{ headerShown: false }}/>
       <Stack.Screen name="Properties" component={PropertiesScreen} options={{ headerShown: false }} />
       <Stack.Screen name="payment" component={PaymentScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Portfolio" component={Dashboard} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

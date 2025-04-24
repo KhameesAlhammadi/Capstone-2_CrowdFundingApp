@@ -15,13 +15,14 @@ const Header = () => {
         <Text style={styles.link}>Properties</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => navigation.navigate("Portfolio")}>
+        <Text style={styles.link}>Portfolio</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={() => navigation.navigate("ContactUS")}>
         <Text style={styles.link}>Contact Us</Text>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity onPress={() => navigation.navigate("index")}>
-        <Text style={styles.link}>SignUp - in</Text>
-      </TouchableOpacity> */}
     </View>
   );
 };
