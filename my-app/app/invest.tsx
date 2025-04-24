@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, TextInput } from "react-native";
 import * as Progress from 'react-native-progress';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage, auth, db } from '../firebaseconfig/firebase';
@@ -19,11 +19,14 @@ export default function InvestPage() {
   
 
   const route = useRoute();
- 
+  
+
+  const { property } = route.params;
 
   type RouteParams = {
 	property: {
-	  city: String;
+    id:string;
+	  city: string;
 	  imageUrl: string;
 	  description: string;
 	  location: string;
@@ -34,7 +37,7 @@ export default function InvestPage() {
 	};
   };
 //   const route = useRoute<RouteProp<RouteParams, 'params'>>();
-  const { property } = route.params;
+  
 
   // handles user state
   useEffect(() => {
@@ -69,8 +72,18 @@ export default function InvestPage() {
     fetchImageUrl();
   }, []);
 
-  const increaseAmount = () => setInvestmentAmount(prev => prev + 100);
-  const decreaseAmount = () => setInvestmentAmount(prev => (prev > 0 ? prev - 100 : 0));
+  
+
+  const handleDecrease = () => {
+    const amount = Number(investmentAmount) || 0;
+    const newAmount = Math.max(amount - 100, 0); // Prevent negative
+    setInvestmentAmount(String(newAmount));
+  };
+
+  const handleIncrease = () => {
+    const amount = Number(investmentAmount) || 0;
+    setInvestmentAmount(String(amount + 100));
+  };
 
   
   const handleInvest = async () => {
@@ -81,17 +94,18 @@ export default function InvestPage() {
 					try 
 					{
 						// Add a new document to the 'investors' collection
-						// const docRef = await addDoc(collection(db, "investors"), {
-						// userId: currentUser.uid, // Store the user's UID
-						// email: currentUser.email, // Store the user's email (optional)
-						// investmentAmount: investmentAmount, // Amount the user invested
-						// timestamp: new Date(), // Timestamp for when the investment was made
-						// });
+						const docRef = await addDoc(collection(db, "investors"), {
+						userId: currentUser.uid, // Store the user's UID
+						email: currentUser.email, // Store the user's email (optional)
+						investmentAmount: investmentAmount, // Amount the user invested
+						timestamp: new Date(), // Timestamp for when the investment was made
+            propertyId: property.id,
+						});
 
-						// console.log("Investment saved with ID:", docRef.id);
-						// alert(`You have invested AED ${investmentAmount}`);
+						console.log("Investment saved with ID:", docRef.id);
+						alert(`You have invested AED ${investmentAmount}`);
 
-            navigation.navigate("payment");
+            // navigation.navigate("payment");
 					} 
 					
 					catch (e) {
@@ -148,13 +162,34 @@ export default function InvestPage() {
 
       <View style={styles.stickyControlPanel}>
         <View style={styles.amountControl}>
-            <TouchableOpacity style={styles.adjustButton} onPress={decreaseAmount}>
+            <TouchableOpacity style={styles.adjustButton} onPress={handleDecrease}>
               <Text style={styles.adjustText}>-</Text>
             </TouchableOpacity>
 
-            <Text style={styles.amountText}>AED {investmentAmount}</Text>
+            <TextInput
+          style={styles.amountText}
+          value={investmentAmount}
+          onChangeText={(text) => {
+            // Remove leading zeros unless the input is just "0"
+            let normalizedText = text.replace(/^0+/, '');
 
-            <TouchableOpacity style={styles.adjustButton} onPress={increaseAmount}>
+            // If the input is empty (after removing leading zeros), reset to "0"
+            if (normalizedText === '') {
+              normalizedText = '0';
+            }
+
+            // Prevent starting or ending with a decimal point
+            if (/^\d*\.?\d*$/.test(normalizedText) && 
+                !(normalizedText.startsWith('.') && normalizedText.length === 1) && 
+                !normalizedText.endsWith('.')) {
+              setInvestmentAmount(normalizedText);
+            }
+          }}
+          placeholder="0"
+          keyboardType="numeric"
+        />
+
+            <TouchableOpacity style={styles.adjustButton} onPress={handleIncrease}>
               <Text style={styles.adjustText}>+</Text>
             </TouchableOpacity>
 
@@ -166,6 +201,14 @@ export default function InvestPage() {
     </View>
   );
 }
+
+
+
+
+
+
+
+
 const styles = StyleSheet.create({
   container: {
     padding: 16,
@@ -253,6 +296,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   amountText: {
+    textAlign:"center",
     fontSize: 20,
     fontWeight: "bold",
   },
