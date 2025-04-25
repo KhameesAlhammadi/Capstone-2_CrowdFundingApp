@@ -192,7 +192,7 @@ const Dashboard = () => {
         ) : (
           <DataTable>
             <DataTable.Header>
-              <DataTable.Title>Property ID</DataTable.Title>
+              {/* <DataTable.Title>Property ID</DataTable.Title> */}
               <DataTable.Title>Location</DataTable.Title>
               <DataTable.Title>Investment (AED)</DataTable.Title>
               <DataTable.Title>Status</DataTable.Title>
@@ -200,7 +200,7 @@ const Dashboard = () => {
             </DataTable.Header>
             {portfolio.stakes.map((stake, index) => (
               <DataTable.Row key={index}>
-                <DataTable.Cell>{stake.propertyId}</DataTable.Cell>
+                {/* <DataTable.Cell>{stake.propertyId}</DataTable.Cell> */}
                 <DataTable.Cell>{stake.location}</DataTable.Cell>
                 <DataTable.Cell>{stake.investmentValue}</DataTable.Cell>
                 <DataTable.Cell>{stake.status}</DataTable.Cell>
