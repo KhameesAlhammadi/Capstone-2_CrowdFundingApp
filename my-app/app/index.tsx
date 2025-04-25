@@ -31,7 +31,8 @@ export default function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>();
 
-  const phoneRegex = /^(050|052|054|056|057|058)\d{3}\d{4}$/;
+  const phoneRegex = /^(050|052|054|056|057|058)\d{7}$/;
+
   const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
   const signIn = isSignUp ? "Sign In" : null;
   const nameRegex = /^[a-zA-Z]{3,}$/;
@@ -74,7 +75,7 @@ export default function AuthPage() {
         newErrors.phoneNumber = "Phone number is required.";
         hasError = true;
       } else if (!phoneRegex.test(phoneNumber)) {
-        newErrors.phoneNumber = "Phone number must follow the format: 050-123-4567.";
+        newErrors.phoneNumber = "Phone number must be 10 digits and start with 050, 052, 054, 056, 057, or 058";
         hasError = true;
       }
     
@@ -126,14 +127,27 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
-        // ✅ Check if the email already exists in Firestore
-        const q = query(collection(db, "users"), where("email", "==", email));
-        const existing = await getDocs(q);
+        // Check if the email already exists in Firestore
+        const checkEmail = query(collection(db, "users"), where("email", "==", email));
+        const existing = await getDocs(checkEmail);
 
-        if (!existing.empty) {
-          setErrors({ ...newErrors, email: "This email is already in use." });
-          return;
-        }
+        const checkPhone = query(collection(db, "users"), where("phoneNumber", "==", phoneNumber));
+        const existingPhone = await getDocs(checkPhone);
+
+        
+
+    if (!existing.empty) {
+      newErrors.email = "This email is already in use.";
+    }
+
+    if (!existingPhone.empty) {
+      newErrors.phoneNumber = "This phone number is already in use.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const userId = userCredential.user.uid;
