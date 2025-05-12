@@ -7,9 +7,10 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   sendPasswordResetEmail,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../firebaseconfig/firebase";
-import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore"; // ✅ added
+import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,10 +32,10 @@ export default function AuthPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const navigation = useNavigation<any>();
 
-  const phoneRegex = /^(050|052|054|056|057|058)-\d{3}-\d{4}$/;
+  const phoneRegex = /^(050|052|054|056|057|058)\d{7}$/;
   const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
   const signIn = isSignUp ? "Sign In" : null;
-  const nameRegex = /^[a-zA-Z]{2,}$/;
+  const nameRegex = /^[a-zA-Z]{3,}$/;
   const passwordRegex = /^[a-zA-Z0-9_!@#$%^&*()\-+=]{8,}$/;
 
   const handleSubmit = async () => {
@@ -51,7 +52,6 @@ export default function AuthPage() {
     setSuccessMessage("");
 
     if (isSignUp) {
-      // First Name
       if (!firstName.trim()) {
         newErrors.firstName = "First name is required.";
         hasError = true;
@@ -59,8 +59,6 @@ export default function AuthPage() {
         newErrors.firstName = "First name must contain only letters and be at least 3 characters long.";
         hasError = true;
       }
-    
-      // Last Name
       if (!lastName.trim()) {
         newErrors.lastName = "Last name is required.";
         hasError = true;
@@ -68,17 +66,13 @@ export default function AuthPage() {
         newErrors.lastName = "Last name must contain only letters and be at least 3 characters long.";
         hasError = true;
       }
-    
-      // Phone Number
       if (!phoneNumber.trim()) {
         newErrors.phoneNumber = "Phone number is required.";
         hasError = true;
       } else if (!phoneRegex.test(phoneNumber)) {
-        newErrors.phoneNumber = "Phone number must follow the format: 050-123-4567.";
+        newErrors.phoneNumber = "Phone number must be 10 digits and start with 050, 052, 054, 056, 057, or 058";
         hasError = true;
       }
-    
-      // Email
       if (!email.trim()) {
         newErrors.email = "Email is required.";
         hasError = true;
@@ -86,8 +80,6 @@ export default function AuthPage() {
         newErrors.email = "Please enter a valid email (gmail, yahoo, or outlook only).";
         hasError = true;
       }
-    
-      // Password
       if (!password.trim()) {
         newErrors.password = "Password is required.";
         hasError = true;
@@ -95,8 +87,6 @@ export default function AuthPage() {
         newErrors.password = "Password must be at least 8 characters and include letters, numbers, or symbols.";
         hasError = true;
       }
-    
-      // Confirm Password
       if (!confirmPassword.trim()) {
         newErrors.confirmPassword = "Confirm password is required.";
         hasError = true;
@@ -104,15 +94,11 @@ export default function AuthPage() {
         newErrors.confirmPassword = "Passwords do not match.";
         hasError = true;
       }
-    }
-    
-
-    if (signIn && email === "" && password === "") {
+    } else {
       if (!email.trim()) {
         newErrors.email = "Email is required.";
         hasError = true;
       }
-
       if (!password.trim()) {
         newErrors.password = "Password is required.";
         hasError = true;
@@ -126,32 +112,40 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
-        // ✅ Check if the email already exists in Firestore
-        const q = query(collection(db, "users"), where("email", "==", email));
-        const existing = await getDocs(q);
+        const checkEmail = query(collection(db, "users"), where("email", "==", email));
+        const existingEmail = await getDocs(checkEmail);
+        const checkPhone = query(collection(db, "users"), where("phoneNumber", "==", phoneNumber));
+        const existingPhone = await getDocs(checkPhone);
 
-        if (!existing.empty) {
-          setErrors({ ...newErrors, email: "This email is already in use." });
+        if (!existingEmail.empty) {
+          newErrors.email = "This email is already in use.";
+          hasError = true;
+        }
+        if (!existingPhone.empty) {
+          newErrors.phoneNumber = "This phone number is already in use.";
+          hasError = true;
+        }
+        if (hasError) {
+          setErrors(newErrors);
           return;
         }
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const userId = userCredential.user.uid;
+        const user = userCredential.user;
 
-        const userDetails = {
-          firstName,
-          lastName,
-          phoneNumber,
-          email,
-          password,
-        };
+        await sendEmailVerification(user);
 
-        await setDoc(doc(db, "users", userId), userDetails);
-
-        setSuccessMessage(`Account created successfully! Welcome, ${firstName} ${lastName}! 🎉`);
+        setSuccessMessage("Verification email sent. Please check your inbox before signing in.");
         setIsSignUp(false);
+        return;
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        if (!userCredential.user.emailVerified) {
+          setErrors({ ...newErrors, general: "Please verify your email before signing in." });
+          return;
+        }
+
         setSuccessMessage("Logged in successfully! 🎉");
         navigation.navigate("home");
       }
@@ -166,6 +160,7 @@ export default function AuthPage() {
         general: "",
       });
     } catch (err) {
+      console.error("Auth Error:", err);
       setErrors({
         ...newErrors,
         general: isSignUp
