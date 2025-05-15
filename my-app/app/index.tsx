@@ -1,5 +1,6 @@
+// ✅ START OF FILE
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Platform, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
   createUserWithEmailAndPassword,
@@ -7,9 +8,10 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   sendPasswordResetEmail,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../firebaseconfig/firebase";
-import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore"; // ✅ added
+import { doc, setDoc, getDocs, collection, query, where } from "firebase/firestore";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -32,9 +34,7 @@ export default function AuthPage() {
   const navigation = useNavigation<any>();
 
   const phoneRegex = /^(050|052|054|056|057|058)\d{7}$/;
-
   const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|yahoo|outlook)\.com$/;
-  const signIn = isSignUp ? "Sign In" : null;
   const nameRegex = /^[a-zA-Z]{3,}$/;
   const passwordRegex = /^[a-zA-Z0-9_!@#$%^&*()\-+=]{8,}$/;
 
@@ -50,8 +50,8 @@ export default function AuthPage() {
     };
     let hasError = false;
     setSuccessMessage("");
-  
-    // --- Input Validation ---
+
+    // Validations
     if (isSignUp) {
       if (!firstName.trim()) {
         newErrors.firstName = "First name is required.";
@@ -60,7 +60,7 @@ export default function AuthPage() {
         newErrors.firstName = "First name must contain only letters and be at least 3 characters long.";
         hasError = true;
       }
-  
+
       if (!lastName.trim()) {
         newErrors.lastName = "Last name is required.";
         hasError = true;
@@ -68,7 +68,7 @@ export default function AuthPage() {
         newErrors.lastName = "Last name must contain only letters and be at least 3 characters long.";
         hasError = true;
       }
-  
+
       if (!phoneNumber.trim()) {
         newErrors.phoneNumber = "Phone number is required.";
         hasError = true;
@@ -76,7 +76,7 @@ export default function AuthPage() {
         newErrors.phoneNumber = "Phone number must be 10 digits and start with 050, 052, 054, 056, 057, or 058";
         hasError = true;
       }
-  
+
       if (!email.trim()) {
         newErrors.email = "Email is required.";
         hasError = true;
@@ -84,7 +84,7 @@ export default function AuthPage() {
         newErrors.email = "Please enter a valid email (gmail, yahoo, or outlook only).";
         hasError = true;
       }
-  
+
       if (!password.trim()) {
         newErrors.password = "Password is required.";
         hasError = true;
@@ -92,7 +92,7 @@ export default function AuthPage() {
         newErrors.password = "Password must be at least 8 characters and include letters, numbers, or symbols.";
         hasError = true;
       }
-  
+
       if (!confirmPassword.trim()) {
         newErrors.confirmPassword = "Confirm password is required.";
         hasError = true;
@@ -101,7 +101,6 @@ export default function AuthPage() {
         hasError = true;
       }
     } else {
-      // Login mode
       if (!email.trim()) {
         newErrors.email = "Email is required.";
         hasError = true;
@@ -111,59 +110,60 @@ export default function AuthPage() {
         hasError = true;
       }
     }
-  
+
     if (hasError) {
       setErrors(newErrors);
       return;
     }
-  
-    
+
     try {
       if (isSignUp) {
-        // Check Firestore for existing user
+        // Check if email or phone already in DB
         const checkEmail = query(collection(db, "users"), where("email", "==", email));
         const existingEmail = await getDocs(checkEmail);
-  
+
         const checkPhone = query(collection(db, "users"), where("phoneNumber", "==", phoneNumber));
         const existingPhone = await getDocs(checkPhone);
-  
+
         if (!existingEmail.empty) {
-          newErrors.email = "This email is already in use.";
-          hasError = true;
-        }
-  
-        if (!existingPhone.empty) {
-          newErrors.phoneNumber = "This phone number is already in use.";
-          hasError = true;
-        }
-  
-        if (hasError) {
-          setErrors(newErrors);
+          setErrors({ ...newErrors, email: "This email is already in use." });
           return;
         }
-  
-        // Create User
+        if (!existingPhone.empty) {
+          setErrors({ ...newErrors, phoneNumber: "This phone number is already in use." });
+          return;
+        }
+
+        // Create user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const userId = userCredential.user.uid;
-  
-        const userDetails = {
+        const user = userCredential.user;
+
+        // Send verification email
+        await sendEmailVerification(user);
+
+        // Save user data to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          email,
           firstName,
           lastName,
+          password,
           phoneNumber,
-          email,
-        };
-  
-        await setDoc(doc(db, "users", userId), userDetails);
-  
-        setSuccessMessage(`Account created successfully! Welcome, ${firstName} ${lastName}! 🎉`);
+        });
+
+        setSuccessMessage("Verification email sent. Please check your inbox before signing in.");
         setIsSignUp(false);
+        return;
       } else {
-        // Sign In
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (!userCredential.user.emailVerified) {
+          setErrors({ ...newErrors, general: "Please verify your email before signing in." });
+          return;
+        }
+
         setSuccessMessage("Logged in successfully! 🎉");
         navigation.navigate("home");
       }
-  
+
       setErrors({
         firstName: "",
         lastName: "",
@@ -183,7 +183,6 @@ export default function AuthPage() {
       });
     }
   };
-  
 
   const handleForgotPassword = async () => {
     setErrors({ ...errors, general: "" });
@@ -317,6 +316,7 @@ export default function AuthPage() {
   );
 }
 
+// ✅ STYLES
 const styles = StyleSheet.create({
   container: {
     flex: 1,

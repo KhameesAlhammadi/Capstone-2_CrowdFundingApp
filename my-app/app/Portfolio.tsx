@@ -108,7 +108,7 @@ const Dashboard = () => {
         
         const annualLimit = 367000;
         const investedLast12Months = totalPortfolioValue;
-        const availableToInvest = annualLimit - investedLast12Months;
+        const availableToInvest = investedLast12Months - annualLimit;
         const monthlyIncome = totalRentalIncome / 12;
         const annualRentalYield = totalPortfolioValue > 0
           ? (totalRentalIncome / totalPortfolioValue) * 100
@@ -165,8 +165,8 @@ const Dashboard = () => {
 
       <View style={styles.rowContainer}>
         <Card style={styles.card}><Card.Title title="Monthly Income" subtitle={`AED ${portfolio.monthlyIncome.toFixed(2)}`} /></Card>
-        <Card style={styles.card}><Card.Title title="Total Rental Income" subtitle={`AED ${portfolio.totalRentalIncome}`} /></Card>
-        <Card style={styles.card}><Card.Title title="Total Appreciation" subtitle={`AED ${portfolio.totalAppreciation}`} /></Card>
+        <Card style={styles.card}><Card.Title title="Total Rental Income" subtitle={`AED ${portfolio.totalRentalIncome.toFixed(2)}`} /></Card>
+        <Card style={styles.card}><Card.Title title="Total Appreciation" subtitle={`AED ${portfolio.totalAppreciation.toFixed(2)}`} /></Card>
       </View>
     
       <View style={styles.rowContainer}>
@@ -175,14 +175,14 @@ const Dashboard = () => {
         <Card style={styles.card}><Card.Title title="Annual Rental Yield" subtitle={`${portfolio.annualRentalYield.toFixed(2)}%`} /></Card>
       </View>
 
-      <Card style={styles.card}>
+      {/* <Card style={styles.card}>
         <Card.Title title="Annual Investment Limit" />
         <Card.Content>
           <Text>Annual Limit: AED {portfolio.annualLimit}</Text>
           <Text>Invested in last 12 months: AED {portfolio.investedLast12Months}</Text>
           <Text>Available to invest: AED {portfolio.availableToInvest}</Text>
         </Card.Content>
-      </Card>
+      </Card> */}
 
       <Card style={styles.card}>
         <Card.Title title="My Stakes" />
@@ -193,6 +193,7 @@ const Dashboard = () => {
           <DataTable>
             <DataTable.Header>
               {/* <DataTable.Title>Property ID</DataTable.Title> */}
+              <DataTable.Title>No.</DataTable.Title>
               <DataTable.Title>Location</DataTable.Title>
               <DataTable.Title>Investment (AED)</DataTable.Title>
               <DataTable.Title>Status</DataTable.Title>
@@ -201,6 +202,7 @@ const Dashboard = () => {
             {portfolio.stakes.map((stake, index) => (
               <DataTable.Row key={index}>
                 {/* <DataTable.Cell>{stake.propertyId}</DataTable.Cell> */}
+                <DataTable.Cell>{index + 1}</DataTable.Cell>
                 <DataTable.Cell>{stake.location}</DataTable.Cell>
                 <DataTable.Cell>{stake.investmentValue}</DataTable.Cell>
                 <DataTable.Cell>{stake.status}</DataTable.Cell>

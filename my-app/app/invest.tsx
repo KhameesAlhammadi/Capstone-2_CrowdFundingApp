@@ -1,12 +1,36 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, TextInput } from "react-native";
-import * as Progress from 'react-native-progress';
-import { ref, getDownloadURL } from 'firebase/storage';
-import { storage, auth, db } from '../firebaseconfig/firebase';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  ScrollView,
+  TextInput,
+} from "react-native";
+import * as Progress from "react-native-progress";
+import { ref, getDownloadURL } from "firebase/storage";
+import { storage, auth, db } from "../firebaseconfig/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import { collection, addDoc } from "firebase/firestore";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 import Header from "./Header/Headers";
+
+// Define route params
+type RouteParams = {
+  property: {
+    id: string;
+    city: string;
+    imageUrl: string;
+    description: string;
+    location: string;
+    type: number;
+    rooms: number;
+    price: number;
+    property_name: string;
+  };
+};
 
 export default function InvestPage() {
   const [investmentAmount, setInvestmentAmount] = useState(0);
@@ -15,51 +39,24 @@ export default function InvestPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const navigation = useNavigation();
-
-  
-
-  const route = useRoute();
-  
-
+  const route = useRoute<RouteProp<{ params: RouteParams }, "params">>();
   const { property } = route.params;
 
-  type RouteParams = {
-	property: {
-    id:string;
-	  city: string;
-	  imageUrl: string;
-	  description: string;
-	  location: string;
-	  type: number;
-	  rooms: number;
-	  price: number;
-	  property_name: string;
-	};
-  };
-//   const route = useRoute<RouteProp<RouteParams, 'params'>>();
-  
-
-  // handles user state
+  // Handle user authentication
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log("User is signed in:", user.email);
         setCurrentUser(user);
-      } else {
-        console.log("No user is signed in.");
       }
     });
-
     return () => unsubscribe();
   }, []);
 
-
-
-  // to fetch an image
+  // Fetch image from Firebase Storage
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
-        const imageRef = ref(storage, property.imageUrl); // Use dynamic path
+        const imageRef = ref(storage, property.imageUrl);
         const url = await getDownloadURL(imageRef);
         setImageUrl(url);
       } catch (error) {
@@ -68,69 +65,54 @@ export default function InvestPage() {
         setLoadingImage(false);
       }
     };
-
     fetchImageUrl();
   }, []);
 
-  
-
   const handleDecrease = () => {
-    const amount = Number(investmentAmount) || 0;
-    const newAmount = Math.max(amount - 100, 0); // Prevent negative
-    setInvestmentAmount(Number(newAmount));
+    setInvestmentAmount((prev) => Math.max(prev - 100, 0));
   };
 
   const handleIncrease = () => {
-    const amount = Number(investmentAmount) || 0;
-    setInvestmentAmount(Number(amount + 100));
+    setInvestmentAmount((prev) => prev + 100);
   };
 
-  
   const handleInvest = async () => {
-    if (currentUser) 
-		{
-			if (investmentAmount > 0)
-				{
-					try 
-					{
-						// Add a new document to the 'investors' collection
-						const docRef = await addDoc(collection(db, "investors"), {
-						userId: currentUser.uid, // Store the user's UID
-						email: currentUser.email, // Store the user's email (optional)
-						investmentAmount: investmentAmount, // Amount the user invested
-						timestamp: new Date(), // Timestamp for when the investment was made
-            propertyId: property.id,
-						});
-
-						console.log("Investment saved with ID:", docRef.id);
-						alert(`You have invested AED ${investmentAmount}`);
-
-            // navigation.navigate("payment");
-					} 
-					
-					catch (e) {
-						console.error("Error adding investment: ", e);
-						alert("There was an error processing your investment. Please try again.");
-					}
-				}
-				else{
-					alert("cannot invest with 0 AED");
-				}
-    } else {
+    if (!currentUser) {
       alert("You need to be signed in to make an investment.");
+      return;
+    }
+
+    if (investmentAmount <= 0) {
+      alert("Cannot invest with 0 AED.");
+      return;
+    }
+
+    try {
+      const docRef = await addDoc(collection(db, "investors"), {
+        userId: currentUser.uid,
+        email: currentUser.email,
+        investmentAmount,
+        timestamp: new Date(),
+        propertyId: property.id,
+      });
+
+      console.log("Investment saved with ID:", docRef.id);
+      alert(`You have invested AED ${investmentAmount}`);
+      // navigation.navigate("payment");
+    } catch (e) {
+      console.error("Error adding investment:", e);
+      alert("There was an error processing your investment. Please try again.");
     }
   };
 
-  
-
   return (
     <View style={{ flex: 1 }}>
-      {/* Sticky header outside scroll view */}
       <Header />
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
+
         <View style={styles.cardImage}>
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.cardImageInner} resizeMode="cover" />
@@ -141,7 +123,9 @@ export default function InvestPage() {
 
         <View style={styles.card}>
           <View style={styles.cardContent}>
-            <Text style={styles.propertyDetails}>{property.rooms} rooms • Ready • 🇦🇪 {property.location} • {property.type}</Text>
+            <Text style={styles.propertyDetails}>
+              {property.rooms} rooms • Ready • 🇦🇪 {property.location} • {property.type}
+            </Text>
             <Text style={styles.propertyTitle}>{property.property_name}</Text>
             <Text style={styles.propertyPrice}>{property.price.toLocaleString()} AED</Text>
 
@@ -152,7 +136,7 @@ export default function InvestPage() {
 
             <View style={styles.statsContainer}>
               <Text style={styles.bold}>Details:</Text>
-			  <Text style={styles.stat}>{property.description}</Text>
+              <Text style={styles.stat}>{property.description}</Text>
             </View>
           </View>
         </View>
@@ -162,55 +146,39 @@ export default function InvestPage() {
 
       <View style={styles.stickyControlPanel}>
         <View style={styles.amountControl}>
-            <TouchableOpacity style={styles.adjustButton} onPress={handleDecrease}>
-              <Text style={styles.adjustText}>-</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.adjustButton} onPress={handleDecrease}>
+            <Text style={styles.adjustText}>-</Text>
+          </TouchableOpacity>
 
-<View>
+          <View>
             <TextInput
-          style={styles.amountText}
-          value={investmentAmount.toLocaleString()}
-          onChangeText={(text) => {
-            // Remove all non-numeric characters
-            let normalizedText = text.replace(/[^0-9]/g, '');
-          
-            // Remove leading zeros unless the input is just "0"
-            if (normalizedText.length > 1 && normalizedText.startsWith('0')) {
-              normalizedText = normalizedText.replace(/^0+/, '');
-            }
-          
-            // If the input is empty after cleaning, reset to '0'
-            if (normalizedText === '') {
-              normalizedText = '0';
-            }
-          
-            setInvestmentAmount(normalizedText);
-          }}
-          placeholder="0"
-          keyboardType="numeric"
-          />
-          <Text style={styles.TextCurr}>AED</Text>
-          
+              style={styles.amountText}
+              value={investmentAmount.toString()}
+              onChangeText={(text) => {
+                let normalized = text.replace(/[^0-9]/g, "");
+                if (normalized.startsWith("0") && normalized.length > 1) {
+                  normalized = normalized.replace(/^0+/, "");
+                }
+                setInvestmentAmount(Number(normalized || "0"));
+              }}
+              keyboardType="numeric"
+              placeholder="0"
+            />
+            <Text style={styles.TextCurr}>AED</Text>
           </View>
-            <TouchableOpacity style={styles.adjustButton} onPress={handleIncrease}>
-              <Text style={styles.adjustText}>+</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.investInlineButton} onPress={handleInvest}>
-              <Text style={styles.investInlineButtonText}>Invest Now</Text>
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.adjustButton} onPress={handleIncrease}>
+            <Text style={styles.adjustText}>+</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.investInlineButton} onPress={handleInvest}>
+            <Text style={styles.investInlineButtonText}>Invest Now</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
   );
 }
-
-
-
-
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -218,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f2f2f2",
     width: "50%",
     alignSelf: "center",
-    paddingBottom: 120, // additional cushion
+    paddingBottom: 120,
   },
   cardImage: {
     backgroundColor: "#fff",
@@ -232,7 +200,6 @@ const styles = StyleSheet.create({
   },
   cardImageInner: {
     width: "100%",
-    height: "100%",
     aspectRatio: 16 / 9,
   },
   card: {
@@ -299,44 +266,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   amountText: {
-    textAlign:"center",
+    textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
   },
-  TextCurr:{
-  textAlign:"center"
-  
-  },
-  investButton: {
-    backgroundColor: "#4caf50",
-    paddingVertical: 14,
-    width: 200,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  investButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  stickyControlPanel: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-    height:90,
-    backgroundColor: "#fff",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 10,
-    alignItems: "center",
+  TextCurr: {
+    textAlign: "center",
   },
   investInlineButton: {
     backgroundColor: "#4caf50",
@@ -349,6 +284,25 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  stickyControlPanel: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    height: 90,
+    backgroundColor: "#fff",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 10,
+    alignItems: "center",
   },
   backButton: {
     position: "absolute",
@@ -368,6 +322,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  
-  
 });
